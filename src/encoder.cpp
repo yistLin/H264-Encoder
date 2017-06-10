@@ -4,7 +4,7 @@
 
 int main(int argc, const char *argv[])
 {
-  Log logger;
+  Log logger("Main");
   logger.log(Level::ERROR, "ker");
   return EXIT_SUCCESS;
 }

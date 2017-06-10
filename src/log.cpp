@@ -11,10 +11,16 @@ Log::Log(std::string block_name) : block_name("[" + block_name + "] ") {}
 void Log::log(Level level, std::string message) {
   switch (level) {
     case Level::ERROR:
-      if (this->log_error) std::cerr << this->block_name << message << std::endl; break;
+      if (this->log_error)
+        std::cerr << this->block_name << message << std::endl;
+      break;
     case Level::VERBOSE:
-      if (this->log_verbose) std::cerr << this->block_name << message << std::endl; break;
+      if (this->log_verbose)
+        std::cerr << this->block_name << message << std::endl;
+      break;
     case Level::DEBUG:
-      if (this->log_debug) std::cerr << this->block_name << message << std::endl; break;
+      if (this->log_debug)
+        std::cerr << this->block_name << message << std::endl;
+      break;
   }
 }
