@@ -3,13 +3,16 @@
 RawFrame::RawFrame(const int w, const int h): width(w), height(h) {}
 
 Reader::Reader(const char* filename, const int wid, const int hei) {
+  // Initialize logger
+  this->logger = Log("Reader");
+
   this->width = wid;
   this->height = hei;
 
   // Open the file stream for raw video file
   this->file.open(filename, std::ios::in | std::ios::binary);
   if (!this->file.is_open()) {
-    Log::log(Level::ERROR, "Cannot open file.");
+    this->logger.log(Level::ERROR, "Cannot open file.");
     exit(1);
   }
 

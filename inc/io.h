@@ -21,6 +21,7 @@ public:
 class Reader {
 private:
   std::fstream file;
+  Log logger;
 
 public:
   std::size_t fsize;
