@@ -1,5 +1,10 @@
-int main(int argc, char const *argv[])
+#include <iostream>
+
+#include "log.h"
+
+Log logger;
+
+int main(int argc, const char *argv[])
 {
-	
-	return 0;
+  return EXIT_SUCCESS;
 }
