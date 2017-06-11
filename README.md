@@ -20,7 +20,6 @@ To convert from YUV file to H.264 format file, we use *ffmpeg* again.
 ffmpeg -f rawvideo -pix_fmt yuv420p -s:v 854x480 -r 25 -i input.yuv -c:v libx264 -f rawvideo output.264
 ```
 
-### YUV File
+### RGB File
 
-A file with extension *.yuv* is YUV file. It does not contain any header. For example, *snoopy.yuv* is a YUV file with resolution 854x480 and 4:2:0 ratio (yuv420p), which means each frame starts with 854x480 pixels of Y followed by 427x240 pixels of U and followed by 427x240 pixels of V. That is, a single frame of *snoopy.yuv* contains 614880 pixels.
-
+A file with extension *.rgb* is an RGB file. It does not contain any header. For example, *snoopy.rgb* is a RGB file with resolution 854x480, and each pixels contains 1 byte of red followed by 1 byte of green and followed by 1 byte of blue.
