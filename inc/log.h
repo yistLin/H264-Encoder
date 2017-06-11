@@ -15,8 +15,8 @@ public:
   std::string block_name;
 
   Log();
-  Log(std::string);
-  void log(Level, std::string);
+  Log(std::string&&);
+  void log(Level, std::string&&);
 };
 
 #endif
