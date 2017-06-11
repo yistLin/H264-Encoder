@@ -22,9 +22,10 @@ class Reader {
 private:
   std::fstream file;
   Log logger;
+  std::size_t get_file_size();
 
 public:
-  std::size_t fsize;
+  std::size_t file_size;
   int width;
   int height;
   int pixels_per_unit;
@@ -33,6 +34,7 @@ public:
   Reader(const char*, const int, const int);
 
   RawFrame read_one_frame();
+  double clip(const double&);
 };
 
 #endif // IO
