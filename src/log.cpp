@@ -6,9 +6,9 @@ bool Log::log_debug = false;
 
 Log::Log() : Log::Log("Default") {}
 
-Log::Log(std::string&& block_name) : block_name("[" + block_name + "] ") {}
+Log::Log(std::string&& block_name) : block_name{"[" + block_name + "] "} {}
 
-void Log::log(Level level, std::string&& message) {
+void Log::log(Level level, std::string_view message) {
   switch (level) {
     case Level::ERROR:
       if (this->log_error)

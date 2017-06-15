@@ -16,7 +16,7 @@ public:
 
   Log();
   Log(std::string&&);
-  void log(Level, std::string&&);
+  void log(Level, std::string_view);
 };
 
 #endif
