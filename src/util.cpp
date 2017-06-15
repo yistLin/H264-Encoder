@@ -9,25 +9,20 @@ Util::Util(const int argc, const char *argv[]) {
                                              {"input_file", "snoopy.avi"},
                                              {"output_file", "snoopy.264"}};
   for (int i = 1; i < argc; i++) {
-    std::string argument(argv[i]);
+    std::string key, value{"true"};
+    std::stringstream argument;
+    argument.str(argv[i]);
 
-    if (argument.size() < 2)
-      continue;
-
-    if (argument.front() == '-') {
-      if (argument[1] == '-') {
-        auto pos = argument.find('=');
-        auto key = argument.substr(2, pos - 2);
-        if (pos == std::string::npos) {
-          options[key] = "";
-        } else {
-          auto value = argument.substr(pos + 1);
-          options[key] = value;
-        }
+    if (argument.peek() == '-') {
+      argument.get();
+      if (argument.peek() == '-') {
+        argument.get();
+        std::getline(argument, key, '=');
+        std::getline(argument, value);
       } else {
-        auto key = argument.substr(1);
-        options[key] = "true";
+        std::getline(argument, key);
       }
+      options[key] = value;
     }
   }
 
