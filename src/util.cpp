@@ -9,9 +9,8 @@ Util::Util(const int argc, const char *argv[]) {
                                              {"input_file", "snoopy.avi"},
                                              {"output_file", "snoopy.264"}};
   for (int i = 1; i < argc; i++) {
-    std::string key, value{"true"};
-    std::stringstream argument;
-    argument.str(argv[i]);
+    std::string key, value;
+    std::istringstream argument{argv[i]};
 
     if (argument.peek() == '-') {
       argument.get();
@@ -21,6 +20,7 @@ Util::Util(const int argc, const char *argv[]) {
         std::getline(argument, value);
       } else {
         std::getline(argument, key);
+        value = "true";
       }
       options[key] = value;
     }
