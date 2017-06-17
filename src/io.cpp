@@ -1,5 +1,4 @@
 #include "io.h"
-#include <iostream>
 
 RawFrame::RawFrame(const int w, const int h): width(w), height(h) {}
 
