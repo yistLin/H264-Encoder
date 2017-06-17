@@ -9,9 +9,11 @@
 
 class MacroBlock {
 public:
-	std::array<Block, BLOCKS_PER_MB> block;
-	
-	MacroBlock();
+  int mb_row;
+  int mb_col;
+  std::array<Block, BLOCKS_PER_MB> block;
+
+  MacroBlock(const int r, const int c): mb_row(r), mb_col(c) {}
 };
 
 #endif

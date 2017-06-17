@@ -4,18 +4,23 @@
 #include <vector>
 
 #include "io.h"
-#include "slice.h"
+#include "macroblock.h"
+
+enum picture_type {
+  I_PICTURE,
+  P_PICTURE
+};
 
 class Frame {
 public:
-	int width;
-	int height;
-	int slices_per_frame;
-	std::vector<Slice> slice;
+  int type;
+  int width;
+  int height;
+  int raw_width;
+  int raw_height;
+  std::vector<MacroBlock> mbs;
 
-	Frame();
-	Frame(const int);
-	std::size_t read(RawFrame);
+  Frame(const PadFrame&);
 };
 
 #endif
