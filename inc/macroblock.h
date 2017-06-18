@@ -14,6 +14,9 @@ public:
   std::array<Block, BLOCKS_PER_MB> block;
 
   MacroBlock(const int r, const int c): mb_row(r), mb_col(c) {}
+  Block& operator[] (int x) {
+    return block[x];
+  }
 };
 
 #endif
