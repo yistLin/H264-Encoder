@@ -7,17 +7,17 @@ NTU CSIE ITCT 2017 Spring Final Project
 To create and playback a raw video, we use *ffmpeg* and *ffplay*.
 
 ```bash
-ffmpeg -i input.mp4 -vcodec rawvideo -pix_fmt yuv420p output.yuv  # generate raw video
+ffmpeg -i input.mp4 -vcodec rawvideo -pix_fmt rgb24 output.rgb  # generate raw video
 ```
 
 ```bash
-ffplay -f rawvideo -pix_fmt yuv420p -video_size 720x480 -i raw.yuv  # playback raw video
+ffplay -f rawvideo -pix_fmt rgb24 -video_size 720x480 -i raw.rgb  # playback raw video
 ```
 
-To convert from YUV file to H.264 format file, we use *ffmpeg* again.
+To convert from RGB file to H.264 format file, we use *ffmpeg* again.
 
 ```bash
-ffmpeg -f rawvideo -pix_fmt yuv420p -s:v 854x480 -r 25 -i input.yuv -c:v libx264 -f rawvideo output.264
+ffmpeg -f rawvideo -pix_fmt rgb24 -s:v 854x480 -r 25 -i input.yuv -c:v libx264 -f rawvideo output.264
 ```
 
 ### RGB File
