@@ -3,31 +3,35 @@
 Util::Util(const int argc, const char *argv[]) {
   this->logger = Log("Util");
 
-  std::map<std::string, std::string> options{{"verbose", "false"},
+  std::map<std::string, std::string> options{{"v", "false"},
                                              {"size", "0x0"},
-                                             {"input_file", "snoopy.avi"},
-                                             {"output_file", "snoopy.264"}};
+                                             {"input", "snoopy.avi"},
+                                             {"output", "snoopy.264"}};
 
   // get arguments from command line
+  std::string key;
   for (int i = 1; i < argc; i++) {
-    std::string key, value;
-    std::istringstream argument{argv[i]};
 
-    if (argument.peek() == '-') {
-      argument.get();
+    if (key.empty()) {
+      std::istringstream argument{argv[i]};
       if (argument.peek() == '-') {
         argument.get();
-        std::getline(argument, key, '=');
-        std::getline(argument, value);
-      } else {
-        std::getline(argument, key);
-        value = "true";
+        if (argument.peek() == '-') {
+          argument.get();
+          std::getline(argument, key);
+        } else {
+          std::getline(argument, key);
+          options[key] = "true";
+          key = "";
+        }
       }
-      options[key] = value;
+    } else {
+      options[key] = argv[i];
+      key = "";
     }
   }
 
-  Log::log_verbose = options["verbose"] == "true";
+  Log::log_verbose = options["v"] == "true";
 
   // parse size to width and height
   std::istringstream size{options["size"]};
@@ -44,8 +48,8 @@ Util::Util(const int argc, const char *argv[]) {
   this->logger.log(Level::VERBOSE, "Setting height to " + std::to_string(this->height));
 
   // parse input and output file path
-  this->input_file = options["input_file"];
+  this->input_file = options["input"];
   this->logger.log(Level::VERBOSE, "Setting input file to " + this->input_file);
-  this->output_file = options["output_file"];
+  this->output_file = options["output"];
   this->logger.log(Level::VERBOSE, "Setting output file to " + this->output_file);
 }
