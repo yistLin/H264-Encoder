@@ -4,10 +4,11 @@ Util::Util(const int argc, const char *argv[]) {
   this->logger = Log("Util");
 
   std::map<std::string, std::string> options{{"verbose", "false"},
-                                             {"width", "0"},
-                                             {"height", "0"},
+                                             {"size", "0x0"},
                                              {"input_file", "snoopy.avi"},
                                              {"output_file", "snoopy.264"}};
+
+  // get arguments from command line
   for (int i = 1; i < argc; i++) {
     std::string key, value;
     std::istringstream argument{argv[i]};
@@ -27,12 +28,24 @@ Util::Util(const int argc, const char *argv[]) {
   }
 
   Log::log_verbose = options["verbose"] == "true";
-  this->logger.log(Level::VERBOSE, "Setting width to " + options["width"]);
-  this->width = std::stoul(options["width"]);
-  this->logger.log(Level::VERBOSE, "Setting height to " + options["height"]);
-  this->height = std::stoul(options["height"]);
-  this->logger.log(Level::VERBOSE, "Setting input file to " + options["input_file"]);
+
+  // parse size to width and height
+  std::istringstream size{options["size"]};
+  std::string width_s, height_s;
+  std::getline(size, width_s, 'x');
+  std::getline(size, height_s);
+  if (width_s.empty())
+    width_s = "0";
+  if (height_s.empty())
+    height_s = "0";
+  this->width = std::stoul(width_s);
+  this->logger.log(Level::VERBOSE, "Setting width to " + std::to_string(this->width));
+  this->height = std::stoul(height_s);
+  this->logger.log(Level::VERBOSE, "Setting height to " + std::to_string(this->height));
+
+  // parse input and output file path
   this->input_file = options["input_file"];
-  this->logger.log(Level::VERBOSE, "Setting output file to " + options["output_file"]);
+  this->logger.log(Level::VERBOSE, "Setting input file to " + this->input_file);
   this->output_file = options["output_file"];
+  this->logger.log(Level::VERBOSE, "Setting output file to " + this->output_file);
 }
