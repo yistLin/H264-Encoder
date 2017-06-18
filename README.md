@@ -36,3 +36,4 @@ Reference:
 
 Reference:
 * [H.264/AVC 4x4 Transform and Quantization](https://www.vcodex.com/h264avc-4x4-transform-and-quantization/)
+* [H.264 學習筆記（四）—— 變換與量化(ZT)](http://blog.163.com/qingyu_1984/blog/static/144414503201242410221760)
