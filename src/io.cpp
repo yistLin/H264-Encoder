@@ -69,26 +69,29 @@ PadFrame::PadFrame(const RawFrame& rf) {
   }
 }
 
-Reader::Reader(const char* filename, const int wid, const int hei) {
-  // Initialize logger
-  this->logger = Log("Reader");
-
+Reader::Reader(std::string filename, const int wid, const int hei) {
   this->width = wid;
   this->height = hei;
 
   // Open the file stream for raw video file
   this->file.open(filename, std::ios::in | std::ios::binary);
   if (!this->file.is_open()) {
-    this->logger.log(Level::ERROR, "Cannot open file.");
+    this->logger.log(Level::ERROR, "Cannot open file");
     exit(1);
   }
 
+  // Get file size
   this->file_size = this->get_file_size();
 
   // Calculate number of frames
   this->pixels_per_unit = wid * hei;
   this->pixels_per_frame = this->pixels_per_unit * 3;
   this->nb_frames = this->file_size / this->pixels_per_frame;
+
+  // Initialize logging tool
+  this->logger = Log("Reader");
+  this->logger.log(Level::VERBOSE, "file size = " + std::to_string(this->file_size));
+  this->logger.log(Level::VERBOSE, "# of frames = " + std::to_string(this->nb_frames));
 }
 
 std::size_t Reader::get_file_size() {

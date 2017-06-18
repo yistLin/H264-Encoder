@@ -47,7 +47,7 @@ public:
   int pixels_per_frame;
   int nb_frames;
 
-  Reader(const char*, const int, const int);
+  Reader(std::string, const int, const int);
   RawFrame read_one_frame();
   PadFrame get_padded_frame();
   double clip(const double&);
