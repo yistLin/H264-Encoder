@@ -5,6 +5,8 @@
 #include <vector>
 #include <cstdint>
 
+#include "log.h"
+
 class RawFrame {
 public:
   int width;
@@ -32,6 +34,7 @@ public:
 
 class Reader {
 private:
+  Log logger;
   std::fstream file;
   std::size_t get_file_size();
   void convert_rgb_to_ycrcb(unsigned char*, double&, double&, double&);
