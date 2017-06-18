@@ -5,7 +5,6 @@
 #include <string>
 #include <experimental/string_view>
 
-
 enum class Level { ERROR, VERBOSE, DEBUG };
 
 class Log {
