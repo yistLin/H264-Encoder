@@ -11,12 +11,13 @@ class MacroBlock {
 public:
   int mb_row;
   int mb_col;
-  std::array<Block, BLOCKS_PER_MB> block;
+  int mb_index;
+  Block16x16 Y;
+  Block8x8 Cr;
+  Block8x8 Cb;
 
   MacroBlock(const int r, const int c): mb_row(r), mb_col(c) {}
-  Block& operator[] (int x) {
-    return block[x];
-  }
 };
 
 #endif
+
