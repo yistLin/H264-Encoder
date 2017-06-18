@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <string>
+#include <string_view>
 
 enum class Level { ERROR, VERBOSE, DEBUG };
 

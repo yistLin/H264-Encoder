@@ -12,7 +12,7 @@ OBJS = $(addprefix $(OBJ_DIR)/, $(notdir $(SRCS:.cpp=.o)))
 
 LIBS =
 INCLUDE = -I$(INC_DIR)
-CPPFLAGS += -Wall -std=c++11
+CPPFLAGS += -Wall -std=c++17
 LDFLAGS +=
 LDLIBS +=
 
