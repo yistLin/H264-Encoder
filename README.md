@@ -31,3 +31,8 @@ There are 2 sets of intra prediction modes, one is 16x16 luma prediction modes, 
 Reference:
 * [H.264/AVC Intra Prediction](https://www.vcodex.com/h264avc-intra-precition/)
 * [Fast Intra-Prediction Mode Selection for H.264](https://pdfs.semanticscholar.org/7eba/7f2d55ffc7e74d5b7eae7cd30f4a9038581a.pdf)
+
+### 4x4 DCT and IDCT
+
+Reference:
+* [H.264/AVC 4x4 Transform and Quantization](https://www.vcodex.com/h264avc-4x4-transform-and-quantization/)
