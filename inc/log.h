@@ -3,7 +3,8 @@
 
 #include <iostream>
 #include <string>
-#include <string_view>
+#include <experimental/string_view>
+
 
 enum class Level { ERROR, VERBOSE, DEBUG };
 
@@ -17,7 +18,7 @@ public:
 
   Log();
   Log(std::string&&);
-  void log(Level, std::string_view);
+  void log(Level, std::experimental::string_view);
 };
 
 #endif
