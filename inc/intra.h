@@ -49,6 +49,7 @@ void intra16x16_horizontal(Block16x16&, const Predictor&);
 void intra16x16_dc(Block16x16&, const Predictor&);
 void intra16x16_plane(Block16x16&, const Predictor&);
 Predictor get_intra16x16_predictor(std::experimental::optional<std::reference_wrapper<Block16x16>>, std::experimental::optional<std::reference_wrapper<Block16x16>>, std::experimental::optional<std::reference_wrapper<Block16x16>>);
+void intra16x16_reconstruct(Block16x16&, std::experimental::optional<std::reference_wrapper<Block16x16>>, std::experimental::optional<std::reference_wrapper<Block16x16>>, std::experimental::optional<std::reference_wrapper<Block16x16>>, const Intra16x16Mode);
 
 IntraChromaMode intra8x8_chroma(Block8x8&, const Block8x8&, const Block8x8&, const Block8x8&);
 void get_intra8x8_chroma(Block8x8&, const Predictor&, const IntraChromaMode);

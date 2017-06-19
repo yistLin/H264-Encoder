@@ -8,7 +8,7 @@ T clip(const T& n, const T& lower, const T& upper) {
 }
 
 /* Input iterators
- * return summation of absolute difference (SSD)
+ * return summation of absolute difference (SAD)
  */
 template<class InputIt1, class InputIt2, class OutputIt>
 int SAD(InputIt1 first1, InputIt1 last1, InputIt2 first2, OutputIt result) {
@@ -16,9 +16,8 @@ int SAD(InputIt1 first1, InputIt1 last1, InputIt2 first2, OutputIt result) {
   int diff;
   while (first1 != last1) {
     diff = (*first1++ - *first2++);
-    diff = (diff > 0)? diff: -diff; 
     *result++ = diff;
-    sad += diff;
+    sad += (diff > 0)? diff: -diff;
   }
   return sad;
 }
@@ -54,6 +53,22 @@ Intra16x16Mode intra16x16(Block16x16& block,
   std::copy(residual.begin(), residual.end(), block.begin());
 
   return best_mode;
+}
+
+/* Input residual, neighbors and prediction mode
+ * overwrite reconstructed block on resudual
+ */
+void intra16x16_reconstruct(Block16x16& block, 
+  std::experimental::optional<std::reference_wrapper<Block16x16>> ul, 
+  std::experimental::optional<std::reference_wrapper<Block16x16>> u, 
+  std::experimental::optional<std::reference_wrapper<Block16x16>> l,
+  const Intra16x16Mode mode) {
+
+  Block16x16 pred;
+  Predictor predictor = get_intra16x16_predictor(ul, u, l);
+  get_intra16x16(pred, predictor, mode);
+
+  std::transform(block.begin(), block.end(), pred.begin(), block.begin(), std::plus<int>());
 }
 
 /* Input predictors and mode
