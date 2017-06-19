@@ -2,7 +2,7 @@
 #define QDCT
 
 #include <cmath>
-#include "macroblock.h"
+#include "block.h"
 
 // Important definition
 const int QP = 28;
@@ -48,15 +48,15 @@ const int mat_V[6][3] = {
 };
 
 // Private part
-void mat_mul(const int[4][4], const int[4][4], int[4][4]);
-void compute_core(int[4][4]);
-void core_transform(int[4][4], int[4][4]);
-void inv_compute_core(int[4][4]);
-void inv_core_transform(int[4][4], int[4][4]);
+inline void mat_mul(const int[4][4], const int[4][4], int[4][4]);
+void core_transform(const int[4][4], int[4][4]);
+void inv_core_transform(const int[4][4], int[4][4]);
 
 // Public interface
-void qDCT(MacroBlock&);
-void inv_qDCT(MacroBlock&);
+void qDCT(Block8x8&);
+void qDCT(Block16x16&);
+void inv_qDCT(Block8x8&);
+void inv_qDCT(Block16x16&);
 
 #endif // QDCT
 
