@@ -82,7 +82,30 @@ void inv_core_transform(int mat_x[4][4], int mat_z[4][4]) {
  * The interface of QDCT, to split a whole macroblock into
  * several 4x4 block and transform it
  */
-void QDCT(MacroBlock& mb) {
+void qDCT(MacroBlock& mb) {
+  int mat_x[4][4];
+  int mat_z[4][4];
+
+  // Apply 4x4 QDCT 16 times on LUMA block
+  for (int i = 0; i < 16; i++) {
+
+    // Upper left corner of this block
+    auto ul_itr = mb.Y.begin() + (i / 4) * 64 + (i % 4) * 4;
+
+    // Copy into 4x4 matrix
+    for (int y = 0; y < 4; y++) {
+      for (int x = 0; x < 4; x++) {
+        mat_x[y][x] = *(ul_itr++);
+      }
+      ul_itr = ul_itr - 4 + 16;
+    }
+
+    // Compute core matrix
+    compute_core(mat_x);
+
+    // 4x4 Core Transform
+    core_transform(mat_x, mat_z);
+  }
 }
 
 /* Inverse Quantized Discrete Cosine Transform
@@ -90,7 +113,7 @@ void QDCT(MacroBlock& mb) {
  * The interface for doing inversed way of QDCT on
  * whole macroblock
  */
-void IQDCT(MacroBlock& mb) {
+void inv_qDCT(MacroBlock& mb) {
 
 }
 
