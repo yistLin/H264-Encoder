@@ -1,6 +1,10 @@
 #include "qdct.h"
 
-inline void mat_mul(const int a[4][4], const int b[4][4], int c[4][4]) {
+/* Matrix multiplication
+ *
+ * mat_mul(mat_a, mat_b, mat_c): mat_c = mat_a x mat_b
+ */
+inline void mat_mul(const int a[][4], const int b[][4], int c[][4]) {
 	for (int i = 0; i < 4; i++) {
 		for(int j = 0; j < 4; j++) {
 			c[i][j] = 0;
@@ -12,22 +16,29 @@ inline void mat_mul(const int a[4][4], const int b[4][4], int c[4][4]) {
 
 /* Core transformation on 4x4 block
  *
- * By formula:
- * (0, 0), (2, 0), (0, 2), (2, 2) mf = mat_MF[QP % 6][0]
- * (1, 1), (3, 1), (1, 3), (3, 3) mf = mat_MF[QP % 6][1]
- * other positions                mf = mat_MF[QP % 6][2]
+ * core_transform(mat_x, mat_z): mat_x -> mat_z
  */
-void core_transform(const int mat_x[4][4], int mat_z[4][4]) {
-	// Compute core matrix
-  int mat_temp[4][4];
-	mat_mul(mat_Cf, mat_x, mat_z);
-  mat_mul(mat_z, mat_Cf_T, mat_temp);
+void core_transform(const int mat_x[][4], int mat_z[][4]) {
 
-  // Set up transform arguments
+  /* Core transformation
+   *
+   * given the residual matrix: R, the core matrix: W, is
+   *   W = Cf x R x Cf^T
+   */
+  static int mat_temp[4][4], mat_w[4][4];
+	mat_mul(mat_Cf, mat_x, mat_temp);
+  mat_mul(mat_temp, mat_Cf_T, mat_w);
+
+  /* Quantization
+   *
+   * By formula:
+   *   (0, 0),(2, 0),(0, 2),(2, 2): mf = mat_MF[QP % 6][0]
+   *   (1, 1),(3, 1),(1, 3),(3, 3): mf = mat_MF[QP % 6][1]
+   *   other positions:             mf = mat_MF[QP % 6][2]
+   */
   int qbits = 15 + floor(QP / 6);
   int f = (int)(pow(2.0, qbits) / 3.0);
-  int mf, k;
-
+  int k;
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
       if ((i == 0 || i == 2) && (j == 0 || j == 2))
@@ -37,22 +48,30 @@ void core_transform(const int mat_x[4][4], int mat_z[4][4]) {
       else
         k = 2;
 
-      mf = mat_MF[QP % 6][k];
-      mat_z[i][j] = (abs(mat_temp[i][j]) * mf + f) >> qbits;
-
-      if (mat_temp[i][j] < 0)
+      mat_z[i][j] = (abs(mat_w[i][j]) * mat_MF[QP % 6][k] + f) >> qbits;
+      if (mat_w[i][j] < 0)
         mat_z[i][j] = -mat_z[i][j];
     }
   }
 }
 
 /* Inversed core transformation on 4x4 block
+ *
+ * inv_core_transform(mat_x, mat_z): mat_x -> mat_z
  */
-void inv_core_transform(const int mat_x[4][4], int mat_z[4][4]) {
+void inv_core_transform(const int mat_x[][4], int mat_z[][4]) {
+
+  /* Rescaling (inversed quantization)
+   *
+   * By formula:
+   *   (0, 0),(2, 0),(0, 2),(2, 2): mf = mat_V[QP % 6][0]
+   *   (1, 1),(3, 1),(1, 3),(3, 3): mf = mat_V[QP % 6][1]
+   *   other positions:             mf = mat_V[QP % 6][2]
+   */
   int t = floor(QP / 6);
   int f = (int)pow(2.0, t);
-  int k, v;
-
+  int k;
+  static int mat_w[4][4];
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
       if ((i == 0 || i == 2) && (j == 0 || j == 2))
@@ -62,14 +81,17 @@ void inv_core_transform(const int mat_x[4][4], int mat_z[4][4]) {
       else
         k = 2;
 
-      v = mat_V[QP % 6][k];
-      mat_z[i][j] = mat_x[i][j] * v * f;
+      mat_w[i][j] = mat_x[i][j] * mat_V[QP % 6][k] * f;
     }
   }
 
-  // Inverse from core matrix
-  int mat_temp[4][4];
-	mat_mul(mat_Ci, mat_z, mat_temp);
+  /* Inversed core transformation
+   *
+   * given the core matrix: W, the residual matrix: R is
+   *   R = Ci x W x Ci^T
+   */
+  static int mat_temp[4][4];
+	mat_mul(mat_Ci, mat_w, mat_temp);
   mat_mul(mat_temp, mat_Ci_T, mat_z);
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++)

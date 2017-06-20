@@ -48,9 +48,9 @@ const int mat_V[6][3] = {
 };
 
 // Private part
-inline void mat_mul(const int[4][4], const int[4][4], int[4][4]);
-void core_transform(const int[4][4], int[4][4]);
-void inv_core_transform(const int[4][4], int[4][4]);
+inline void mat_mul(const int[][4], const int[][4], int[][4]);
+void core_transform(const int[][4], int[][4]);
+void inv_core_transform(const int[][4], int[][4]);
 
 // Public interface
 void qDCT(Block8x8&);
@@ -59,4 +59,3 @@ void inv_qDCT(Block8x8&);
 void inv_qDCT(Block16x16&);
 
 #endif // QDCT
-
