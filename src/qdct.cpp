@@ -16,9 +16,9 @@ inline void mat_mul(const int a[][4], const int b[][4], int c[][4]) {
 
 /* Core transformation on 4x4 block
  *
- * core_transform(mat_x, mat_z): mat_x -> mat_z
+ * core_transform(mat_x, mat_z, QP): mat_x -> mat_z
  */
-void core_transform(const int mat_x[][4], int mat_z[][4]) {
+inline void core_transform(const int mat_x[][4], int mat_z[][4], const int QP) {
 
   /* Core transformation
    *
@@ -57,9 +57,9 @@ void core_transform(const int mat_x[][4], int mat_z[][4]) {
 
 /* Inversed core transformation on 4x4 block
  *
- * inv_core_transform(mat_x, mat_z): mat_x -> mat_z
+ * inv_core_transform(mat_x, mat_z, QP): mat_x -> mat_z
  */
-void inv_core_transform(const int mat_x[][4], int mat_z[][4]) {
+inline void inv_core_transform(const int mat_x[][4], int mat_z[][4], const int QP) {
 
   /* Rescaling (inversed quantization)
    *
@@ -99,114 +99,46 @@ void inv_core_transform(const int mat_x[][4], int mat_z[][4]) {
   }
 }
 
-/* Quantized Discrete Cosine Transform
+/* Quantized discrete cosine transformation
  *
- * The interface of QDCT, apply on 16x16 block
+ * The interface of forward or inverse QDCT, apply on each 4x4 block
  */
-void qDCT(Block16x16& block) {
+template <typename T, typename Func>
+inline void qdct(T& block, const int BLOCK_SIZE, Func transform_func, const int QP) {
+
+  // source 4x4 block, target 4x4 block
   int mat_x[4][4], mat_z[4][4];
 
   // Apply 4x4 core transform 16 times on 16x16 block
-  for (int i = 0; i < 256; i += 64) {
-    for (int j = 0; j < 16; j += 4) {
+  for (int i = 0; i < BLOCK_SIZE*BLOCK_SIZE; i += BLOCK_SIZE*4) {
+    for (int j = 0; j < BLOCK_SIZE; j += 4) {
       // Copy into 4x4 matrix
       for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++)
-          mat_x[y][x] = block[i+j+y*16+x];
+          mat_x[y][x] = block[i+j+y*BLOCK_SIZE+x];
       }
 
       // Apply 4x4 core transform
-      core_transform(mat_x, mat_z);
+      transform_func(mat_x, mat_z, QP);
 
       // Write back from 4x4 matrix
       for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++)
-          block[i+j+y*16+x] = mat_z[y][x];
+          block[i+j+y*BLOCK_SIZE+x] = mat_z[y][x];
       }
     }
   }
 }
 
-/* Quantized Discrete Cosine Transform
- *
- * The interface of QDCT, apply on 8x8 block
- */
-void qDCT(Block8x8& block) {
-  int mat_x[4][4], mat_z[4][4];
-
-  // Apply 4x4 core transform 4 times on 8x8 block
-  for (int i = 0; i < 64; i += 32) {
-    for (int j = 0; j < 8; j += 4) {
-      // Copy into 4x4 matrix
-      for (int y = 0; y < 4; y++) {
-        for (int x = 0; x < 4; x++)
-          mat_x[y][x] = block[i+j+y*8+x];
-      }
-
-      // Apply 4x4 core transform
-      core_transform(mat_x, mat_z);
-
-      // Write back from 4x4 matrix
-      for (int y = 0; y < 4; y++) {
-        for (int x = 0; x < 4; x++)
-          block[i+j+y*8+x] = mat_z[y][x];
-      }
-    }
-  }
+void qdct_luma16x16_intra(Block16x16& block) {
+  qdct(block, 16, core_transform, LUMA_QP);
 }
-
-/* Inverse Quantized Discrete Cosine Transform
- *
- * The interface of inversed QDCT, apply on 16x16 block
- */
-void inv_qDCT(Block16x16& block) {
-  int mat_x[4][4], mat_z[4][4];
-
-  // Apply 4x4 core transform 16 times on 16x16 block
-  for (int i = 0; i < 256; i += 64) {
-    for (int j = 0; j < 16; j += 4) {
-      // Copy into 4x4 matrix
-      for (int y = 0; y < 4; y++) {
-        for (int x = 0; x < 4; x++)
-          mat_x[y][x] = block[i+j+y*16+x];
-      }
-
-      // Apply 4x4 core transform
-      inv_core_transform(mat_x, mat_z);
-
-      // Write back from 4x4 matrix
-      for (int y = 0; y < 4; y++) {
-        for (int x = 0; x < 4; x++)
-          block[i+j+y*16+x] = mat_z[y][x];
-      }
-    }
-  }
+void qdct_chroma8x8_intra(Block8x8& block) {
+  qdct(block, 8, core_transform, CHROMA_QP);
 }
-
-/* Inverse Quantized Discrete Cosine Transform
- *
- * The interface of inversed QDCT, apply on 8x8 block
- */
-void inv_qDCT(Block8x8& block) {
-  int mat_x[4][4], mat_z[4][4];
-
-  // Apply 4x4 core transform 4 times on 8x8 block
-  for (int i = 0; i < 64; i += 32) {
-    for (int j = 0; j < 8; j += 4) {
-      // Copy into 4x4 matrix
-      for (int y = 0; y < 4; y++) {
-        for (int x = 0; x < 4; x++)
-          mat_x[y][x] = block[i+j+y*8+x];
-      }
-
-      // Apply 4x4 core transform
-      inv_core_transform(mat_x, mat_z);
-
-      // Write back from 4x4 matrix
-      for (int y = 0; y < 4; y++) {
-        for (int x = 0; x < 4; x++)
-          block[i+j+y*8+x] = mat_z[y][x];
-      }
-    }
-  }
+void inv_qdct_luma16x16_intra(Block16x16& block) {
+  qdct(block, 16, inv_core_transform, LUMA_QP);
+}
+void inv_qdct_chroma8x8_intra(Block8x8& block) {
+  qdct(block, 8, inv_core_transform, CHROMA_QP);
 }

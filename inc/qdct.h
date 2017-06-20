@@ -5,7 +5,10 @@
 #include "block.h"
 
 // Important definition
-const int QP = 28;
+
+// MAX QP for luma is 51, MAX QP for chroma is 39
+const int LUMA_QP = 30;
+const int CHROMA_QP = 10;
 const int mat_Cf[4][4] = {
   {1,  1,  1,  1},
   {2,  1, -1, -2},
@@ -49,13 +52,17 @@ const int mat_V[6][3] = {
 
 // Private part
 inline void mat_mul(const int[][4], const int[][4], int[][4]);
-void core_transform(const int[][4], int[][4]);
-void inv_core_transform(const int[][4], int[][4]);
+inline void core_transform(const int[][4], int[][4], const int);
+inline void inv_core_transform(const int[][4], int[][4], const int);
+
+// Main QDCT function used as an expandable funciton
+template <typename T, typename Func>
+inline void qdct(T&, const int, Func, const int);
 
 // Public interface
-void qDCT(Block8x8&);
-void qDCT(Block16x16&);
-void inv_qDCT(Block8x8&);
-void inv_qDCT(Block16x16&);
+void qdct_luma16x16_intra(Block16x16&);
+void qdct_chroma8x8_intra(Block8x8&);
+void inv_qdct_luma16x16_intra(Block16x16&);
+void inv_qdct_chroma8x8_intra(Block8x8&);
 
 #endif // QDCT
