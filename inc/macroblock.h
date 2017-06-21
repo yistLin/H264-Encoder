@@ -23,10 +23,18 @@ public:
   // std::array<Intra4x4Mode, 16> intra4x4_Y_mode;
   IntraChromaMode intra_Cr_Cb_mode;
 
+  constexpr static const std::array<int, 16> convert_table{{0, 1, 4, 5, 2, 3, 6, 7, 8, 9, 12, 13, 10, 11, 14, 15}};
 
   MacroBlock(const int r, const int c): mb_row(r), mb_col(c) {}
 
+  /*
+   *  0  1  4  5
+   *  2  3  6  7
+   *  8  9  12 13
+   *  10 11 14 15
+   */
   Block4x4& get_Y_4x4_block(int pos) {
+    pos = convert_table[pos];
     int origin = (pos / 4) * 64 + (pos % 4) * 4;
     static Block4x4 block(Y[origin], Y[origin + 1], Y[origin + 2], Y[origin + 3],
                           Y[origin + 16], Y[origin + 17], Y[origin + 18], Y[origin + 19],
