@@ -19,6 +19,7 @@ public:
 
   bool is_intra16x16;
   Intra16x16Mode intra16x16_Y_mode;
+  IntraChromaMode intra_Cr_Cb_mode;
 
 
   MacroBlock(const int r, const int c): mb_row(r), mb_col(c) {}
