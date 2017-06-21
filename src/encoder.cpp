@@ -16,14 +16,14 @@ void* operator new(std::size_t n) {
 void encode_sequence(Reader& reader) {
   int curr_frame = 0;
 
-  // while (curr_frame < reader.nb_frames) {
+  while (curr_frame < reader.nb_frames) {
     Frame frame(reader.get_padded_frame());
 
     logger.log(Level::VERBOSE, "encode frame #" + std::to_string(curr_frame));
     encode_I_frame(frame);
 
     curr_frame++;
-  // }
+  }
 }
 
 int main(int argc, const char *argv[]) {

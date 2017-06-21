@@ -11,8 +11,6 @@ void encode_I_frame(Frame& frame) {
     decoded_blocks.push_back(mb);
     encode_Y_block(mb, decoded_blocks, frame);
     encode_Cr_Cb_block(mb, decoded_blocks, frame);
-
-    break;
   }
 }
 
@@ -24,14 +22,6 @@ void encode_Y_block(MacroBlock& mb, std::vector<MacroBlock>& decoded_blocks, Fra
   // perform intra16x16 prediction
   int error_intra16x16 = encode_Y_intra16x16_block(mb, decoded_blocks, frame);
   f_logger.log(Level::DEBUG, "intra16x16 error: " + std::to_string(error_intra16x16));
-
-  for (int i = 0; i != 16; i++)
-    std::cerr << mb.get_Y_4x4_block(15)[i] << " ";
-  std::cerr << std::endl;
-
-  for (auto i : mb.get_Y_4x4_block(15))
-    std::cerr << i << " ";
-  std::cerr << std::endl;
 
   // perform intra4x4 prediction
   int error_intra4x4 = 0;
@@ -81,6 +71,8 @@ int encode_Y_intra16x16_block(MacroBlock& mb, std::vector<MacroBlock>& decoded_b
 }
 
 int encode_Y_intra4x4_block(int cur_pos, MacroBlock& mb, MacroBlock& decoded_block, std::vector<MacroBlock>& decoded_blocks, Frame& frame) {
+  int temp_pos = MacroBlock::convert_table[cur_pos];
+
   auto get_4x4_block = [&](int index, int pos) {
     if (index == -1)
       return std::experimental::optional<std::reference_wrapper<Block4x4>>();
@@ -92,66 +84,69 @@ int encode_Y_intra4x4_block(int cur_pos, MacroBlock& mb, MacroBlock& decoded_blo
 
   auto get_UL_4x4_block = [&]() {
     int index, pos;
-    if (cur_pos == 0) {
+    if (temp_pos == 0) {
       index = frame.get_neighbor_index(mb.mb_index, MB_NEIGHBOR_UL);
       pos = 15;
-    } else if (1 <= cur_pos && cur_pos <= 3) {
+    } else if (1 <= temp_pos && temp_pos <= 3) {
       index = frame.get_neighbor_index(mb.mb_index, MB_NEIGHBOR_U);
-      pos = 11 + cur_pos;
-    } else if (cur_pos % 4 == 0) {
+      pos = 11 + temp_pos;
+    } else if (temp_pos % 4 == 0) {
       index = frame.get_neighbor_index(mb.mb_index, MB_NEIGHBOR_L);
-      pos = cur_pos - 1;
+      pos = temp_pos - 1;
     } else {
       index = mb.mb_index;
-      pos = cur_pos - 5;
+      pos = temp_pos - 5;
     }
 
-    get_4x4_block(index, pos);
+    get_4x4_block(index, MacroBlock::convert_table[pos]);
   };
 
   auto get_U_4x4_block = [&]() {
     int index, pos;
-    if (0 <= cur_pos && cur_pos <= 3) {
+    if (0 <= temp_pos && temp_pos <= 3) {
       index = frame.get_neighbor_index(mb.mb_index, MB_NEIGHBOR_U);
-      pos = 12 + cur_pos;
+      pos = 12 + temp_pos;
     } else {
       index = mb.mb_index;
-      pos = cur_pos - 4;
+      pos = temp_pos - 4;
     }
 
-    get_4x4_block(index, pos);
+    get_4x4_block(index, MacroBlock::convert_table[pos]);
   };
 
   auto get_UR_4x4_block = [&]() {
     int index, pos;
-    if (cur_pos == 3) {
+    if (temp_pos == 3) {
       index = frame.get_neighbor_index(mb.mb_index, MB_NEIGHBOR_UR);
       pos = 12;
-    } else if (0 <= cur_pos && cur_pos <= 2) {
-      index = frame.get_neighbor_index(mb.mb_index, MB_NEIGHBOR_U);
-      pos = 1 + cur_pos;
-    } else if ((cur_pos + 1) % 4 == 0) {
+    } else if (temp_pos == 5 || temp_pos == 13) {
       index = -1;
-      pos = cur_pos - 7;
+      pos = 0;
+    } else if (0 <= temp_pos && temp_pos <= 2) {
+      index = frame.get_neighbor_index(mb.mb_index, MB_NEIGHBOR_U);
+      pos = 1 + temp_pos;
+    } else if ((temp_pos + 1) % 4 == 0) {
+      index = -1;
+      pos = 0;
     } else {
       index = mb.mb_index;
-      pos = cur_pos - 3;
+      pos = temp_pos - 3;
     }
 
-    get_4x4_block(index, pos);
+    get_4x4_block(index, MacroBlock::convert_table[pos]);
   };
 
   auto get_L_4x4_block = [&]() {
     int index, pos;
-    if (cur_pos % 4 == 0) {
+    if (temp_pos % 4 == 0) {
       index = frame.get_neighbor_index(mb.mb_index, MB_NEIGHBOR_L);
-      pos = cur_pos + 3;
+      pos = temp_pos + 3;
     } else {
       index = mb.mb_index;
-      pos = cur_pos - 1;
+      pos = temp_pos - 1;
     }
 
-    get_4x4_block(index, pos);
+    get_4x4_block(index, MacroBlock::convert_table[pos]);
   };
 
   int error = 0;
