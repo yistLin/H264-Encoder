@@ -7,8 +7,8 @@
 // Important definition
 
 // MAX QP for luma is 51, MAX QP for chroma is 39
-const int LUMA_QP = 30;
-const int CHROMA_QP = 10;
+const int LUMA_QP = 28;
+const int CHROMA_QP = 28;
 const int mat_Cf[4][4] = {
   {1,  1,  1,  1},
   {2,  1, -1, -2},
@@ -51,13 +51,20 @@ const int mat_V[6][3] = {
 };
 
 // Private part
-inline void mat_mul(const int[][4], const int[][4], int[][4]);
-inline void core_transform(const int[][4], int[][4], const int);
-inline void inv_core_transform(const int[][4], int[][4], const int);
+void forward_dct4x4(const int[][4], int[][4]);
+void inverse_dct4x4(const int[][4], int[][4]);
+void forward_quantize4x4(const int[][4], int[][4], const int);
+void inverse_quantize4x4(const int[][4], int[][4], const int);
+void forward_quantize2x2(const int[][2], int[][2], const int);
+void inverse_quantize2x2(const int[][2], int[][2], const int);
+void forward_hadamard4x4(const int[][4], int[][4]);
+void inverse__hadamard4x4(const int[][4], int[][4]);
+void forward_hadamard2x2(const int[][4], int[][4]);
+void inverse__hadamard2x2(const int[][4], int[][4]);
 
 // Main QDCT function used as an expandable funciton
-template <typename T, typename Func>
-inline void qdct(T&, const int, Func, const int);
+template <typename T>
+inline void qdct(T&, const int, const int);
 
 // Public interface
 void qdct_luma16x16_intra(Block16x16&);
