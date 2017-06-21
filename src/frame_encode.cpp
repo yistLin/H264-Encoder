@@ -21,18 +21,19 @@ void encode_Y_block(MacroBlock& mb, std::vector<MacroBlock>& decoded_blocks, Fra
 
   // perform intra16x16 prediction
   int error_intra16x16 = encode_Y_intra16x16_block(mb, decoded_blocks, frame);
-  f_logger.log(Level::DEBUG, "intra16x16 error: " + std::to_string(error_intra16x16));
 
   // perform intra4x4 prediction
   int error_intra4x4 = 0;
   for (int i = 0; i != 16; i++)
     error_intra4x4 += encode_Y_intra4x4_block(i, temp_block, temp_decoded_block, decoded_blocks, frame);
-  f_logger.log(Level::DEBUG, "intra4x4 error: " + std::to_string(error_intra4x4));
 
   // compare the error of two predictions
   if (error_intra4x4 < error_intra16x16) {
+    f_logger.log(Level::DEBUG, "using intra4x4\terror: " + std::to_string(error_intra4x4));
     mb = temp_block;
     decoded_blocks.at(mb.mb_index) = temp_decoded_block;
+  } else {
+    f_logger.log(Level::DEBUG, "using intra16x16\terror: " + std::to_string(error_intra16x16));
   }
 }
 
@@ -161,11 +162,14 @@ int encode_Y_intra4x4_block(int cur_pos, MacroBlock& mb, MacroBlock& decoded_blo
   mb.intra4x4_Y_mode.at(cur_pos) = mode;
 
   // QDCT
-  // qdct(mb.get_Y_4x4_block(cur_pos));
+  qdct_luma4x4_intra(mb.get_Y_4x4_block(cur_pos));
 
   // reconstruct for later prediction
-  decoded_block.Y = mb.Y;
-  // inv_qdct(decoded_block.get_Y_4x4_block(cur_pos));
+  auto temp_4x4 = decoded_block.get_Y_4x4_block(cur_pos);
+  auto temp_mb = mb.get_Y_4x4_block(cur_pos);
+  for (int i = 0; i != 16; i++)
+    temp_4x4[i] = temp_mb[i];
+  inv_qdct_luma4x4_intra(decoded_block.get_Y_4x4_block(cur_pos));
   intra4x4_reconstruct(decoded_block.get_Y_4x4_block(cur_pos),
                        get_UL_4x4_block(),
                        get_U_4x4_block(),
