@@ -42,3 +42,4 @@ Reference:
 ### Book Reference
 
 * [Next-Generation Video Coding and Streaming](https://books.google.com.tw/books?id=Sa-RCwAAQBAJ&printsec=frontcover&hl=zh-TW#v=onepage&q&f=false)
+* [Next-Generation Video Coding and Streaming -- Wiley Online Library](http://onlinelibrary.wiley.com/book/10.1002/9781119133346)
