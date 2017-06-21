@@ -13,8 +13,6 @@ void encode_I_frame(Frame& frame) {
 }
 
 void encode_Y_block(MacroBlock& mb, std::vector<Block16x16>& decoded_Y_blocks, Frame& frame) {
-  decoded_Y_blocks.push_back(mb.Y);
-
   auto get_decoded_Y_block = [&](int direction) {
     int index = frame.get_neighbor_index(mb.mb_index, direction);
     if (index == -1)
@@ -23,6 +21,7 @@ void encode_Y_block(MacroBlock& mb, std::vector<Block16x16>& decoded_Y_blocks, F
       return std::experimental::optional<std::reference_wrapper<Block16x16>>(decoded_Y_blocks.at(index));
   };
 
+  // apply intra prediction
   Intra16x16Mode mode = intra16x16(mb.Y, get_decoded_Y_block(MB_NEIGHBOR_UL),
                                          get_decoded_Y_block(MB_NEIGHBOR_U),
                                          get_decoded_Y_block(MB_NEIGHBOR_L));
@@ -30,9 +29,16 @@ void encode_Y_block(MacroBlock& mb, std::vector<Block16x16>& decoded_Y_blocks, F
   mb.is_intra16x16 = true;
   mb.intra16x16_Y_mode = mode;
 
-  // QDCT
-  // IQDCT
+  decoded_Y_blocks.push_back(mb.Y);
 
-  // decode
-  // decode(decoded_Y_blocks.back(), mode, FLAG);
+  // QDCT & IQDCT
+  qdct_luma16x16_intra(decoded_Y_blocks.back());
+  inv_qdct_luma16x16_intra(decoded_Y_blocks.back());
+
+  // reconstruct for later prediction
+  intra16x16_reconstruct(decoded_Y_blocks.back(),
+                         get_decoded_Y_block(MB_NEIGHBOR_UL),
+                         get_decoded_Y_block(MB_NEIGHBOR_U),
+                         get_decoded_Y_block(MB_NEIGHBOR_L),
+                         mode);
 }

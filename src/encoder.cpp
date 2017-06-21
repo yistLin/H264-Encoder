@@ -4,21 +4,29 @@
 #include "util.h"
 #include "io.h"
 #include "frame.h"
+#include "frame_encode.h"
+
+Log logger("Main");
+
+void* operator new(std::size_t n) {
+    // std::cerr << "[allocating " << n << " bytes]\n";
+    return malloc(n);
+}
 
 void encode_sequence(Reader& reader) {
   int curr_frame = 0;
 
   while (curr_frame < reader.nb_frames) {
-    PadFrame pf = reader.get_padded_frame();
-    Frame frame(pf);
+    Frame frame(reader.get_padded_frame());
+
+    logger.log(Level::VERBOSE, "encode frame #" + std::to_string(curr_frame));
+    encode_I_frame(frame);
 
     curr_frame++;
   }
 }
 
 int main(int argc, const char *argv[]) {
-  Log logger("Main");
-
   // Get command-line arguments
   Util util(argc, argv);
 
@@ -30,4 +38,3 @@ int main(int argc, const char *argv[]) {
 
   return EXIT_SUCCESS;
 }
-
