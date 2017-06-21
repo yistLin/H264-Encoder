@@ -98,7 +98,7 @@ int encode_Y_intra4x4_block(int cur_pos, MacroBlock& mb, MacroBlock& decoded_blo
       pos = temp_pos - 5;
     }
 
-    get_4x4_block(index, MacroBlock::convert_table[pos]);
+    return get_4x4_block(index, MacroBlock::convert_table[pos]);
   };
 
   auto get_U_4x4_block = [&]() {
@@ -111,7 +111,7 @@ int encode_Y_intra4x4_block(int cur_pos, MacroBlock& mb, MacroBlock& decoded_blo
       pos = temp_pos - 4;
     }
 
-    get_4x4_block(index, MacroBlock::convert_table[pos]);
+    return get_4x4_block(index, MacroBlock::convert_table[pos]);
   };
 
   auto get_UR_4x4_block = [&]() {
@@ -133,7 +133,7 @@ int encode_Y_intra4x4_block(int cur_pos, MacroBlock& mb, MacroBlock& decoded_blo
       pos = temp_pos - 3;
     }
 
-    get_4x4_block(index, MacroBlock::convert_table[pos]);
+    return get_4x4_block(index, MacroBlock::convert_table[pos]);
   };
 
   auto get_L_4x4_block = [&]() {
@@ -146,18 +146,19 @@ int encode_Y_intra4x4_block(int cur_pos, MacroBlock& mb, MacroBlock& decoded_blo
       pos = temp_pos - 1;
     }
 
-    get_4x4_block(index, MacroBlock::convert_table[pos]);
+    return get_4x4_block(index, MacroBlock::convert_table[pos]);
   };
 
   int error = 0;
-  // Intra4x4Mode mode;
-  // std::tie(error, mode) = intra4x4(mb.Y, get_UL_4x4_block(),
-  //                                        get_U_4x4_block(),
-  //                                        get_UR_4x4_block(),
-  //                                        get_L_4x4_block());
+  Intra4x4Mode mode;
+  std::tie(error, mode) = intra4x4(mb.get_Y_4x4_block(cur_pos),
+                                   get_UL_4x4_block(),
+                                   get_U_4x4_block(),
+                                   get_UR_4x4_block(),
+                                   get_L_4x4_block());
 
   mb.is_intra16x16 = false;
-  // mb.intra4x4_Y_mode.at(cur_pos) = mode;
+  mb.intra4x4_Y_mode.at(cur_pos) = mode;
 
   // QDCT
   // qdct(mb.get_Y_4x4_block(cur_pos));
@@ -165,12 +166,12 @@ int encode_Y_intra4x4_block(int cur_pos, MacroBlock& mb, MacroBlock& decoded_blo
   // reconstruct for later prediction
   decoded_block.Y = mb.Y;
   // inv_qdct(decoded_block.get_Y_4x4_block(cur_pos));
-  // intra4x4_reconstruct(decoded_block.Y,
-  //                      get_UL_4x4_block(),
-  //                      get_U_4x4_block(),
-  //                      get_UR_4x4_block(),
-  //                      get_L_4x4_block(),
-  //                      mode);
+  intra4x4_reconstruct(decoded_block.get_Y_4x4_block(cur_pos),
+                       get_UL_4x4_block(),
+                       get_U_4x4_block(),
+                       get_UR_4x4_block(),
+                       get_L_4x4_block(),
+                       mode);
 
   return error;
 }

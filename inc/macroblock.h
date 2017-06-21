@@ -20,7 +20,7 @@ public:
 
   bool is_intra16x16;
   Intra16x16Mode intra16x16_Y_mode;
-  // std::array<Intra4x4Mode, 16> intra4x4_Y_mode;
+  std::array<Intra4x4Mode, 16> intra4x4_Y_mode;
   IntraChromaMode intra_Cr_Cb_mode;
 
   constexpr static const std::array<int, 16> convert_table{{0, 1, 4, 5, 2, 3, 6, 7, 8, 9, 12, 13, 10, 11, 14, 15}};
