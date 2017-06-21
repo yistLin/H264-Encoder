@@ -212,6 +212,9 @@ Predictor get_intra16x16_predictor(
   return predictor;
 }
 
-IntraChromaMode intra8x8_chroma(Block8x8& block, const Block8x8& ul, const Block8x8& u, const Block8x8& l) {
+IntraChromaMode intra8x8_chroma(Block8x8& block,
+  std::experimental::optional<std::reference_wrapper<Block8x8>> ul,
+  std::experimental::optional<std::reference_wrapper<Block8x8>> u,
+  std::experimental::optional<std::reference_wrapper<Block8x8>> l) {
 
 }
