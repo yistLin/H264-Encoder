@@ -22,6 +22,355 @@ int SAD(InputIt1 first1, InputIt1 last1, InputIt2 first2, OutputIt result) {
   return sad;
 }
 
+/* Input 4x4 block and its neighbors
+ * do intra4x4 prediction which has 9 modes
+ * overwrite residual on input block
+ * return the least cost mode
+ */
+std::tuple<int, Intra4x4Mode> intra4x4(Block4x4& block, 
+  std::experimental::optional<std::reference_wrapper<Block4x4>> ul, 
+  std::experimental::optional<std::reference_wrapper<Block4x4>> u,
+  std::experimental::optional<std::reference_wrapper<Block4x4>> ur,
+  std::experimental::optional<std::reference_wrapper<Block4x4>> l) {
+
+  // Get predictors
+  Predictor predictor = get_intra4x4_predictor(ul, u, ur, l);
+  // printf("Origin\n");
+  // for (int i = 0; i < 4; i++) {
+  //   for (int j = 0; j < 4; j++) {
+  //     printf("%4d ", block[i*4+j]);
+  //   }
+  //   printf("\n");
+  // }
+  // printf("\n");
+
+  int mode;
+  Intra4x4Mode best_mode;
+  CopyBlock4x4 pred, residual;
+  int min_sad = (1 << 15), sad;
+  // Run all modes to get least residual
+  for (mode = 0; mode < 9; mode++) {
+    get_intra4x4(pred, predictor, static_cast<Intra4x4Mode>(mode));
+
+    // printf("Prediction\n");
+    // for (int i = 0; i < 4; i++) {
+    //   for (int j = 0; j < 4; j++) {
+    //     printf("%4d ", pred[i*4+j]);
+    //   }
+    //   printf("\n");
+    // }
+    // printf("\n");
+
+    sad = SAD(block.begin(), block.end(), pred.begin(), pred.begin());
+    if (sad < min_sad) {
+      min_sad = sad;
+      best_mode = static_cast<Intra4x4Mode>(mode);
+      std::copy(pred.begin(), pred.end(), residual.begin());
+    }
+  }
+  std::copy(residual.begin(), residual.end(), block.begin());
+
+  // printf("Residual\n");
+  // for (int i = 0; i < 4; i++) {
+  //   for (int j = 0; j < 4; j++) {
+  //     printf("%4d ", block[i*4+j]);
+  //   }
+  //   printf("\n");
+  // }
+  // printf("\n");
+
+  return std::make_tuple(min_sad, best_mode);
+}
+
+/* Input residual, neighbors and prediction mode
+ * overwrite reconstructed block on resudual
+ */
+void intra4x4_reconstruct(Block4x4& block, 
+  std::experimental::optional<std::reference_wrapper<Block4x4>> ul,
+  std::experimental::optional<std::reference_wrapper<Block4x4>> u,
+  std::experimental::optional<std::reference_wrapper<Block4x4>> ur,
+  std::experimental::optional<std::reference_wrapper<Block4x4>> l,
+  const Intra4x4Mode mode) {
+
+  CopyBlock4x4 pred;
+  Predictor predictor = get_intra4x4_predictor(ul, u, ur, l);
+  get_intra4x4(pred, predictor, mode);
+
+  // std::transform(block.begin(), block.end(), pred.begin(), block.begin(), std::plus<int>());
+  for (int i = 0; i < 16; i++) {
+    block[i] += pred[i];
+  }
+}
+
+/* Input predictors and mode
+ * write intra16x16 prediction on pred
+ */
+void get_intra4x4(CopyBlock4x4& pred, const Predictor& p, const Intra4x4Mode mode) {
+  switch (mode) {
+    case Intra4x4Mode::VERTICAL:
+      intra4x4_vertical(pred, p);
+      break;
+    case Intra4x4Mode::HORIZONTAL:
+      intra4x4_horizontal(pred, p);
+      break;
+    case Intra4x4Mode::DC:
+      intra4x4_dc(pred, p);
+      break;
+    case Intra4x4Mode::DOWNLEFT:
+      intra4x4_downleft(pred, p);
+      break;
+    case Intra4x4Mode::DOWNRIGHT:
+      intra4x4_downright(pred, p);
+      break;
+    case Intra4x4Mode::VERTICALRIGHT:
+      intra4x4_verticalright(pred, p);
+      break;
+    case Intra4x4Mode::HORIZONTALDOWN:
+      intra4x4_horizontaldown(pred, p);
+      break;
+    case Intra4x4Mode::VERTICALLEFT:
+      intra4x4_verticalleft(pred, p);
+      break;
+    case Intra4x4Mode::HORIZONTALUP:
+      intra4x4_horizontalup(pred, p);
+      break;
+  }
+}
+
+void intra4x4_vertical(CopyBlock4x4& pred, const Predictor& predictor) {
+  const std::vector<int>& p = predictor.pred_pel;
+  int i;
+  for (i = 0; i < 4; i++) {
+    std::copy_n(p.begin()+1, 4, pred.begin()+i*4);
+  }
+}
+
+void intra4x4_horizontal(CopyBlock4x4& pred, const Predictor& predictor) {
+  const std::vector<int>& p = predictor.pred_pel;
+  int i, j;
+  for (i = 0; i < 4; i++) {
+    for (j = 0; j < 4; j++) {
+      pred[i*4+j] = p[9+i];
+    }
+  }
+}
+
+void intra4x4_dc(CopyBlock4x4& pred, const Predictor& predictor) {
+  const std::vector<int>& p = predictor.pred_pel;
+  int s1 = 0, s2 = 0, s = 0;
+  int i;
+
+  for (i = 1; i < 5; i++) {
+    s1 += p[i];
+  }
+
+  for (i = 9; i < 17; i++) {
+    s2 += p[i];
+  }
+
+  if (predictor.up_available && predictor.left_available) {
+    s = s1 + s2;
+  }
+  else if (!predictor.up_available && predictor.left_available) {
+    s = 2 * s2;
+  }
+  else if (predictor.up_available && !predictor.left_available) {
+    s = 2 * s1;
+  }
+
+  s += 4;
+  s >>= 3;
+
+  if (!predictor.up_available && !predictor.left_available) {
+    s = 128;
+  }
+
+  pred.fill(s);
+}
+
+void intra4x4_downleft(CopyBlock4x4& pred, const Predictor& predictor) {
+  const std::vector<int>& p = predictor.pred_pel;
+  // hard code for speed
+  // x + y = 0
+  pred[0]  = ((p[1] + p[3] + (p[2] << 1) + 2) >> 2);
+  // x + y = 1
+  pred[1]  = pred[4]  = ((p[2] + p[4] + (p[3] << 1) + 2) >> 2);
+  // x + y = 2
+  pred[2]  = pred[5]  = pred[8]  = ((p[3] + p[5] + (p[4] << 1) + 2) >> 2);
+  // x + y = 3
+  pred[3]  = pred[6]  = pred[9]  = pred[12] = ((p[4] + p[6] + (p[5] << 1) + 2) >> 2);
+  // x + y = 4
+  pred[7]  = pred[10] = pred[13] = ((p[5] + p[7] + (p[6] << 1) + 2) >> 2);
+  // x + y = 5
+  pred[11] = pred[14] = ((p[6] + p[8] + (p[7] << 1) + 2) >> 2);
+  // x + y = 6
+  pred[15] = ((p[7] + 3 * p[8] + 2) >> 2);
+}
+
+void intra4x4_downright(CopyBlock4x4& pred, const Predictor& predictor) {
+  const std::vector<int>& p = predictor.pred_pel;
+  // hard code for speed
+  // x < y
+  // y - x = 3
+  pred[12] = ((p[12] + p[10] + (p[11] << 1) + 2) >> 2);
+  // y - x = 2
+  pred[8]  = pred[13] = ((p[11] + p[9] + (p[10] << 1) + 2) >> 2);
+  // y - x = 1
+  pred[4]  = pred[9]  = pred[14] = ((p[10] + p[1] + (p[9] << 1) + 2) >> 2);
+  // x = y
+  pred[0]  = pred[5]  = pred[10] = pred[15] = ((p[0] + p[9] + (p[1] << 1) + 2) >> 2);
+  // x > y
+  // x - y = 1
+  pred[1]  = pred[6]  = pred[11] = ((p[0] + p[2] + (p[1] << 1) + 2) >> 2);
+  // x - y = 2
+  pred[2]  = pred[7]  = ((p[1] + p[3] + (p[2] << 1) + 2) >> 2);
+  // x - y = 3
+  pred[3]  = ((p[1] + p[3] + (p[2] << 1) + 2) >> 2);
+}
+
+void intra4x4_verticalright(CopyBlock4x4& pred, const Predictor& predictor) {
+  const std::vector<int>& p = predictor.pred_pel;
+  // hard code for speed
+  // zVR = 2 * x - y
+  // zVR = 0
+  pred[0]  = pred[9]  = ((p[0] + p[1] + 1) >> 1);
+  // zVR = 2
+  pred[1]  = pred[10] = ((p[1] + p[2] + 1) >> 1);
+  // zVR = 4
+  pred[2]  = pred[11] = ((p[2] + p[3] + 1) >> 1);
+  // zVR = 6
+  pred[3]  = ((p[3] + p[4] + 1) >> 1);
+  // zVR = -1
+  pred[4]  = pred[13] = ((p[1] + p[9] + (p[0] << 1) + 2) >> 2);
+  // zVR = 1
+  pred[5]  = pred[14] = ((p[0] + p[2] + (p[1] << 1) + 2) >> 2);
+  // zVR = 3
+  pred[6]  = pred[15] = ((p[1] + p[3] + (p[2] << 1) + 2) >> 2);
+  // zVR = 5
+  pred[7]  = ((p[2] + p[4] + (p[3] << 1) + 2) >> 2);
+  // zVR = -2
+  pred[8]  = ((p[0] + p[10] + (p[9] << 1) + 2) >> 2);
+  // zVR = -3
+  pred[12] = ((p[9] + p[11] + (p[10] << 1) + 2) >> 2);
+}
+
+void intra4x4_horizontaldown(CopyBlock4x4& pred, const Predictor& predictor) {
+  const std::vector<int>& p = predictor.pred_pel;
+  // hard code for speed
+  // zHD = 2 * y - x
+  // zHD = 0
+  pred[0]  = pred[6]  = ((p[0] + p[9] + 1) >> 1);
+  // zHD = -1
+  pred[1]  = pred[7]  = ((p[1] + p[9] + (p[0] << 1) + 2) >> 2);
+  // zHD = -2
+  pred[2]  = ((p[0] + p[2] + (p[1] << 1) + 2) >> 2);
+  // zHD = -3
+  pred[3]  = ((p[1] + p[3] + (p[2] << 1) + 2) >> 2);
+  // zHD = 2
+  pred[4]  = pred[10] = ((p[9] + p[10] + 1) >> 1);
+  // zHD = 1
+  pred[5]  = pred[11] = ((p[0] + p[11] + (p[10] << 1) + 2) >> 2);
+  // zHD = 4
+  pred[8]  = pred[14] = ((p[10] + p[11] + 1) >> 1);
+  // zHD = 3
+  pred[9]  = pred[15] = ((p[9] + p[11] + (p[10] << 1) + 2) >> 2);
+  // zHD = 6
+  pred[12] = ((p[11] + p[12] + 1) >> 1);
+  // zHD = 5
+  pred[13] = ((p[10] + p[12] + (p[11] << 1) + 2) >> 2);
+}
+
+void intra4x4_verticalleft(CopyBlock4x4& pred, const Predictor& predictor) {
+  const std::vector<int>& p = predictor.pred_pel;
+  // hard code for speed
+  pred[0]  = ((p[1] + p[2] + 1) >> 1);
+  pred[1]  = pred[8]  = ((p[2] + p[3] + 1) >> 1);
+  pred[2]  = pred[9]  = ((p[3] + p[4] + 1) >> 1);
+  pred[3]  = pred[10] = ((p[4] + p[5] + 1) >> 1);
+  pred[11] = ((p[5] + p[6] + 1) >> 1);
+  pred[4]  = ((p[1] + p[3] + (p[2] << 1) + 2) >> 2);
+  pred[5]  = pred[12] = ((p[2] + p[4] + (p[3] << 1) + 2) >> 2);
+  pred[6]  = pred[13] = ((p[3] + p[5] + (p[4] << 1) + 2) >> 2);
+  pred[7]  = pred[14] = ((p[4] + p[6] + (p[5] << 1) + 2) >> 2);
+  pred[15] = ((p[5] + p[7] + (p[6] << 1) + 2) >> 2);
+}
+
+void intra4x4_horizontalup(CopyBlock4x4& pred, const Predictor& predictor) {
+  const std::vector<int>& p = predictor.pred_pel;
+  // hard code for speed
+  // zHU = x + 2 * y
+  // zHU = 0
+  pred[0]  = ((p[9] + p[10] + 1) >> 1);
+  // zHU = 1
+  pred[1]  = ((p[9] + p[11] + (p[10] << 1) + 2) >> 2);
+  // zHU = 2
+  pred[2]  = pred[4]  = ((p[10] + p[11] + 1) >> 1);
+  // zHU = 3
+  pred[3]  = pred[5]  = ((p[10] + p[12] + (p[11] << 1) + 2) >> 2);
+  // zHU = 4
+  pred[6]  = pred[8] = ((p[11] + p[12] + 1) >> 1);
+  // zHU = 5
+  pred[7]  = pred[9] = ((p[11] + (3 * p[12]) + 2) >> 2);
+  // zHU > 5
+  pred[12] = pred[10] = pred[11] = 
+  pred[13] = pred[14] = pred[15] = p[12];
+}
+
+/* Get intra16x16 predictors from neighbors
+ * [0]: downmost and rightmost pixel of ul
+ * [1..4]: downmost row of u
+ * [5..8]: downmost row of ur
+ * [9..12]: rightmost column of l
+ */ 
+Predictor get_intra4x4_predictor(
+  std::experimental::optional<std::reference_wrapper<Block4x4>> ul,
+  std::experimental::optional<std::reference_wrapper<Block4x4>> u,
+  std::experimental::optional<std::reference_wrapper<Block4x4>> ur,
+  std::experimental::optional<std::reference_wrapper<Block4x4>> l) {
+
+  Predictor predictor(4);
+  std::vector<int>& p = predictor.pred_pel;
+  // Check whether neighbors are available
+  if (u) {
+    Block4x4& tmp = *u;
+    std::copy_n(tmp.begin()+4*3, 4, p.begin()+1);
+    predictor.up_available = true;
+  }
+  else {
+    std::fill_n(p.begin()+1, 4, 128);
+  }
+
+  if (ur) {
+    Block4x4& tmp = *ur;
+    std::copy_n(tmp.begin()+4*3, 4, p.begin()+5);
+  }
+  else {
+    std::fill_n(p.begin()+5, 4, p[4]);
+  }
+
+  if (l) {
+    Block4x4& tmp = *l;
+    for (int i = 0; i < 4; i++) {
+      p[9+i] = tmp[i*4+3];
+    }
+    predictor.up_available = true;
+  }
+  else {
+    std::fill_n(p.begin()+9, 4, 128);
+  }
+
+  if (predictor.up_available && predictor.left_available) {
+    Block4x4& tmp = *ul;
+    p[0] = tmp[15];
+    predictor.all_available = true;
+  }
+  else {
+    p[0] = 128;
+  }
+
+  return predictor;
+}
+
 /* Input 16x16 block and its neighbors
  * do intra16x16 prediction which has 4 modes
  * overwrite residual on input block
