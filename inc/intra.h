@@ -2,6 +2,7 @@
 #define INTRA
 
 #include <vector>
+#include <tuple>
 #include <numeric>
 #include <algorithm>
 #include <functional>
@@ -42,7 +43,7 @@ enum class IntraChromaMode {
   PLANE
 };
 
-Intra16x16Mode intra16x16(Block16x16&, std::experimental::optional<std::reference_wrapper<Block16x16>>, std::experimental::optional<std::reference_wrapper<Block16x16>>, std::experimental::optional<std::reference_wrapper<Block16x16>>);
+std::tuple<int, Intra16x16Mode> intra16x16(Block16x16&, std::experimental::optional<std::reference_wrapper<Block16x16>>, std::experimental::optional<std::reference_wrapper<Block16x16>>, std::experimental::optional<std::reference_wrapper<Block16x16>>);
 void get_intra16x16(Block16x16&, const Predictor&, const Intra16x16Mode);
 void intra16x16_vertical(Block16x16&, const Predictor&);
 void intra16x16_horizontal(Block16x16&, const Predictor&);
@@ -51,8 +52,8 @@ void intra16x16_plane(Block16x16&, const Predictor&);
 Predictor get_intra16x16_predictor(std::experimental::optional<std::reference_wrapper<Block16x16>>, std::experimental::optional<std::reference_wrapper<Block16x16>>, std::experimental::optional<std::reference_wrapper<Block16x16>>);
 void intra16x16_reconstruct(Block16x16&, std::experimental::optional<std::reference_wrapper<Block16x16>>, std::experimental::optional<std::reference_wrapper<Block16x16>>, std::experimental::optional<std::reference_wrapper<Block16x16>>, const Intra16x16Mode);
 
-IntraChromaMode intra8x8_chroma(Block8x8&, std::experimental::optional<std::reference_wrapper<Block8x8>>, std::experimental::optional<std::reference_wrapper<Block8x8>>, std::experimental::optional<std::reference_wrapper<Block8x8>>,
-                                Block8x8&, std::experimental::optional<std::reference_wrapper<Block8x8>>, std::experimental::optional<std::reference_wrapper<Block8x8>>, std::experimental::optional<std::reference_wrapper<Block8x8>>);
+std::tuple<int, IntraChromaMode> intra8x8_chroma(Block8x8&, std::experimental::optional<std::reference_wrapper<Block8x8>>, std::experimental::optional<std::reference_wrapper<Block8x8>>, std::experimental::optional<std::reference_wrapper<Block8x8>>,
+                                                 Block8x8&, std::experimental::optional<std::reference_wrapper<Block8x8>>, std::experimental::optional<std::reference_wrapper<Block8x8>>, std::experimental::optional<std::reference_wrapper<Block8x8>>);
 void get_intra8x8_chroma(Block8x8&, const Predictor&, const IntraChromaMode);
 void intra8x8_chroma_dc(Block8x8&, const Predictor&);
 void intra8x8_chroma_horizontal(Block8x8&, const Predictor&);

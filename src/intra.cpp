@@ -27,7 +27,7 @@ int SAD(InputIt1 first1, InputIt1 last1, InputIt2 first2, OutputIt result) {
  * overwrite residual on input block
  * return the least cost mode
  */
-Intra16x16Mode intra16x16(Block16x16& block, 
+std::tuple<int, Intra16x16Mode> intra16x16(Block16x16& block, 
   std::experimental::optional<std::reference_wrapper<Block16x16>> ul, 
   std::experimental::optional<std::reference_wrapper<Block16x16>> u, 
   std::experimental::optional<std::reference_wrapper<Block16x16>> l) {
@@ -52,7 +52,7 @@ Intra16x16Mode intra16x16(Block16x16& block,
   }
   std::copy(residual.begin(), residual.end(), block.begin());
 
-  return best_mode;
+  return std::make_tuple(min_sad, best_mode);
 }
 
 /* Input residual, neighbors and prediction mode
@@ -217,7 +217,7 @@ Predictor get_intra16x16_predictor(
  * overwrite residual on input block
  * return the least cost mode
  */
-IntraChromaMode intra8x8_chroma(Block8x8& cr_block,
+std::tuple<int, IntraChromaMode> intra8x8_chroma(Block8x8& cr_block,
   std::experimental::optional<std::reference_wrapper<Block8x8>> cr_ul,
   std::experimental::optional<std::reference_wrapper<Block8x8>> cr_u,
   std::experimental::optional<std::reference_wrapper<Block8x8>> cr_l,
@@ -252,7 +252,7 @@ IntraChromaMode intra8x8_chroma(Block8x8& cr_block,
   std::copy(cr_residual.begin(), cr_residual.end(), cr_block.begin());
   std::copy(cb_residual.begin(), cb_residual.end(), cb_block.begin());
 
-  return best_mode;
+  return std::make_tuple(min_sad, best_mode);
 }
 
 /* Input residual, neighbors and prediction mode
@@ -294,7 +294,7 @@ void get_intra8x8_chroma(Block8x8& pred, const Predictor& p, const IntraChromaMo
 void intra8x8_chroma_dc(Block8x8& pred, const Predictor& predictor) {
   const std::vector<int>& p = predictor.pred_pel;
   int s1 = 0, s2 = 0, s3 = 0, s4 = 0;
-  int s_upper_left, s_upper_right, s_down_left, s_down_right;
+  int s_upper_left = 0, s_upper_right = 0, s_down_left = 0, s_down_right = 0;
   int i, j;
 
   // summation of predictors
