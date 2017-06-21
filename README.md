@@ -38,3 +38,7 @@ Reference:
 * [H.264/AVC 4x4 Transform and Quantization](https://www.vcodex.com/h264avc-4x4-transform-and-quantization/)
 * [H.264 學習筆記（四）—— 變換與量化(ZT)](http://blog.163.com/qingyu_1984/blog/static/144414503201242410221760)
 * [H.264 中整數DCT變換，量化，反量化，反DCT究竟是如何實現的？](http://blog.csdn.net/stpeace/article/details/8119041)
+
+### Book Reference
+
+* [Next-Generation Video Coding and Streaming](https://books.google.com.tw/books?id=Sa-RCwAAQBAJ&printsec=frontcover&hl=zh-TW#v=onepage&q&f=false)
