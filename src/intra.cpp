@@ -35,14 +35,6 @@ std::tuple<int, Intra4x4Mode> intra4x4(Block4x4& block,
 
   // Get predictors
   Predictor predictor = get_intra4x4_predictor(ul, u, ur, l);
-  // printf("Origin\n");
-  // for (int i = 0; i < 4; i++) {
-  //   for (int j = 0; j < 4; j++) {
-  //     printf("%4d ", block[i*4+j]);
-  //   }
-  //   printf("\n");
-  // }
-  // printf("\n");
 
   int mode;
   Intra4x4Mode best_mode;
@@ -52,15 +44,6 @@ std::tuple<int, Intra4x4Mode> intra4x4(Block4x4& block,
   for (mode = 0; mode < 9; mode++) {
     get_intra4x4(pred, predictor, static_cast<Intra4x4Mode>(mode));
 
-    // printf("Prediction\n");
-    // for (int i = 0; i < 4; i++) {
-    //   for (int j = 0; j < 4; j++) {
-    //     printf("%4d ", pred[i*4+j]);
-    //   }
-    //   printf("\n");
-    // }
-    // printf("\n");
-
     sad = SAD(block.begin(), block.end(), pred.begin(), pred.begin());
     if (sad < min_sad) {
       min_sad = sad;
@@ -68,16 +51,11 @@ std::tuple<int, Intra4x4Mode> intra4x4(Block4x4& block,
       std::copy(pred.begin(), pred.end(), residual.begin());
     }
   }
-  std::copy(residual.begin(), residual.end(), block.begin());
 
-  // printf("Residual\n");
-  // for (int i = 0; i < 4; i++) {
-  //   for (int j = 0; j < 4; j++) {
-  //     printf("%4d ", block[i*4+j]);
-  //   }
-  //   printf("\n");
-  // }
-  // printf("\n");
+  // use operator = instead of std::copy which use *iter to deal with assignment
+  for (int i = 0; i < 16; i++) {
+    block[i] = residual[i];
+  }
 
   return std::make_tuple(min_sad, best_mode);
 }
