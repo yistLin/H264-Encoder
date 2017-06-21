@@ -4,6 +4,7 @@ Util::Util(const int argc, const char *argv[]) {
   this->logger = Log("Util");
 
   std::map<std::string, std::string> options{{"v", "false"},
+                                             {"d", "false"},
                                              {"size", "0x0"},
                                              {"input", "snoopy.avi"},
                                              {"output", "snoopy.264"}};
@@ -32,6 +33,7 @@ Util::Util(const int argc, const char *argv[]) {
   }
 
   Log::log_verbose = options["v"] == "true";
+  Log::log_debug = options["d"] == "true";
 
   // parse size to width and height
   std::istringstream size{options["size"]};
