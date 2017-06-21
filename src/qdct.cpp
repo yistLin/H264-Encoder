@@ -150,9 +150,41 @@ void inverse_quantize4x4(const int mat_x[][4], int mat_z[][4], const int QP) {
 }
 
 void forward_quantize2x2(const int mat_x[][2], int mat_z[][2], const int QP) {
+  int qbits = 15 + floor(QP / 6);
+  int f = (int)(pow(2.0, qbits) / 3.0);
+  int k;
+  for (int i = 0; i < 2; i++) {
+    for (int j = 0; j < 2; j++) {
+      if (i == 0 && j == 0)
+        k = 0;
+      else if (i == 1 && j == 1)
+        k = 1;
+      else
+        k = 2;
+
+      mat_z[i][j] = (abs(mat_x[i][j]) * mat_MF[QP % 6][k] + f) >> qbits;
+      if (mat_x[i][j] < 0)
+        mat_z[i][j] = -mat_z[i][j];
+    }
+  }
 }
 
 void inverse_quantize2x2(const int mat_x[][2], int mat_z[][2], const int QP) {
+  int t = floor(QP / 6);
+  int f = (int)pow(2.0, t);
+  int k;
+  for (int i = 0; i < 2; i++) {
+    for (int j = 0; j < 2; j++) {
+      if (i == 0 && j == 0)
+        k = 0;
+      else if (i == 1 && j == 1)
+        k = 1;
+      else
+        k = 2;
+
+      mat_z[i][j] = mat_x[i][j] * mat_V[QP % 6][k] * f;
+    }
+  }
 }
 
 /* Hadamard transformation on 4x4 block
@@ -354,6 +386,50 @@ inline void forward_qdct(T& block, const int BLOCK_SIZE, const int QP) {
   }
 }
 
+inline void forward_qdct4x4(Block4x4& block, const int QP) {
+
+  // source 4x4 block, target 4x4 block
+  int mat_x[4][4], mat_z[4][4];
+
+  // Copy into 4x4 matrix
+  for (int y = 0; y < 4; y++) {
+    for (int x = 0; x < 4; x++)
+      mat_x[y][x] = block[y*4+x];
+  }
+
+  // Apply 4x4 core transform
+  forward_dct4x4(mat_x, mat_z);
+  forward_quantize4x4(mat_z, mat_x, QP);
+
+  // Write back from 4x4 matrix
+  for (int y = 0; y < 4; y++) {
+    for (int x = 0; x < 4; x++)
+      block[y*4+x] = mat_x[y][x];
+  }
+}
+
+inline void inverse_qdct4x4(Block4x4& block, const int QP) {
+
+  // source 4x4 block, target 4x4 block
+  int mat_x[4][4], mat_z[4][4];
+
+  // Copy into 4x4 matrix
+  for (int y = 0; y < 4; y++) {
+    for (int x = 0; x < 4; x++)
+      mat_x[y][x] = block[y*4+x];
+  }
+
+  // Apply 4x4 core transform
+  inverse_quantize4x4(mat_x, mat_z, QP);
+  inverse_dct4x4(mat_z, mat_x);
+
+  // Write back from 4x4 matrix
+  for (int y = 0; y < 4; y++) {
+    for (int x = 0; x < 4; x++)
+      block[y*4+x] = mat_x[y][x];
+  }
+}
+
 /* Inversed quantized discrete cosine transformation
  *
  * The interface of forward or inverse QDCT, apply on each 4x4 block
@@ -445,9 +521,15 @@ void qdct_luma16x16_intra(Block16x16& block) {
 void qdct_chroma8x8_intra(Block8x8& block) {
   forward_qdct(block, 8, CHROMA_QP);
 }
+void qdct_luma4x4_intra(Block4x4& block) {
+  forward_qdct4x4(block, CHROMA_QP);
+}
 void inv_qdct_luma16x16_intra(Block16x16& block) {
   inverse_qdct(block, 16, LUMA_QP);
 }
 void inv_qdct_chroma8x8_intra(Block8x8& block) {
   inverse_qdct(block, 8, CHROMA_QP);
+}
+void inv_qdct_luma4x4_intra(Block4x4& block) {
+  inverse_qdct4x4(block, LUMA_QP);
 }

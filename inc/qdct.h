@@ -64,12 +64,19 @@ void inverse__hadamard2x2(const int[][4], int[][4]);
 
 // Main QDCT function used as an expandable funciton
 template <typename T>
-inline void qdct(T&, const int, const int);
+inline void forward_qdct(T&, const int, const int);
+template <typename T>
+inline void inverse_qdct(T&, const int, const int);
+
+inline void forward_qdct4x4(Block4x4&, const int);
+inline void inverse_qdct4x4(Block4x4&, const int);
 
 // Public interface
 void qdct_luma16x16_intra(Block16x16&);
 void qdct_chroma8x8_intra(Block8x8&);
+void qdct_luma4x4_intra(Block4x4&);
 void inv_qdct_luma16x16_intra(Block16x16&);
 void inv_qdct_chroma8x8_intra(Block8x8&);
+void inv_qdct_luma4x4_intra(Block4x4&);
 
 #endif // QDCT
