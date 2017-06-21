@@ -2,6 +2,7 @@
 #define BLOCK
 
 #include <array>
+#include <functional>
 
 #define PIXELS_PER_BLOCK 8*8
 
