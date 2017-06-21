@@ -122,20 +122,20 @@ void intra16x16_dc(Block16x16& pred, const Predictor& predictor) {
     s2 += p[i];
   }
 
-  if (predictor.upper_available && predictor.left_available) {
+  if (predictor.up_available && predictor.left_available) {
     s = s1 + s2;
   }
-  else if (!predictor.upper_available && predictor.left_available) {
+  else if (!predictor.up_available && predictor.left_available) {
     s = 2 * s2;
   }
-  else if (predictor.upper_available && !predictor.left_available) {
+  else if (predictor.up_available && !predictor.left_available) {
     s = 2 * s1;
   }
 
   s += 16;
   s >>= 5;
 
-  if (!predictor.upper_available && !predictor.left_available) {
+  if (!predictor.up_available && !predictor.left_available) {
     s = 128;
   }
 
@@ -183,7 +183,7 @@ Predictor get_intra16x16_predictor(
   if (u) {
     Block16x16& tmp = *u;
     std::copy_n(tmp.begin()+16*15, 16, p.begin()+1);
-    predictor.upper_available = true;
+    predictor.up_available = true;
   }
   else {
     std::fill_n(p.begin()+1, 16, 128);
@@ -194,13 +194,13 @@ Predictor get_intra16x16_predictor(
     for (int i = 0; i < 16; i++) {
       p[17+i] = tmp[i*16+15];
     }
-    predictor.upper_available = true;
+    predictor.up_available = true;
   }
   else {
     std::fill_n(p.begin()+17, 16, 128);
   }
 
-  if (predictor.upper_available && predictor.left_available) {
+  if (predictor.up_available && predictor.left_available) {
     Block16x16& tmp = *ul;
     p[0] = tmp.back();
     predictor.all_available = true;
