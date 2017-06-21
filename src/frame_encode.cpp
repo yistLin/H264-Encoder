@@ -11,6 +11,8 @@ void encode_I_frame(Frame& frame) {
     decoded_blocks.push_back(mb);
     encode_Y_block(mb, decoded_blocks, frame);
     encode_Cr_Cb_block(mb, decoded_blocks, frame);
+
+    break;
   }
 }
 
@@ -22,6 +24,14 @@ void encode_Y_block(MacroBlock& mb, std::vector<MacroBlock>& decoded_blocks, Fra
   // perform intra16x16 prediction
   int error_intra16x16 = encode_Y_intra16x16_block(mb, decoded_blocks, frame);
   f_logger.log(Level::DEBUG, "intra16x16 error: " + std::to_string(error_intra16x16));
+
+  for (int i = 0; i != 16; i++)
+    std::cerr << mb.get_Y_4x4_block(15)[i] << " ";
+  std::cerr << std::endl;
+
+  for (auto i : mb.get_Y_4x4_block(15))
+    std::cerr << i << " ";
+  std::cerr << std::endl;
 
   // perform intra4x4 prediction
   int error_intra4x4 = 0;
@@ -121,8 +131,7 @@ int encode_Y_intra4x4_block(int cur_pos, MacroBlock& mb, MacroBlock& decoded_blo
       index = frame.get_neighbor_index(mb.mb_index, MB_NEIGHBOR_U);
       pos = 1 + cur_pos;
     } else if ((cur_pos + 1) % 4 == 0) {
-      // index = frame.get_neighbor_index(mb.mb_index, MB_NEIGHBOR_R);
-      index = 0;
+      index = -1;
       pos = cur_pos - 7;
     } else {
       index = mb.mb_index;
