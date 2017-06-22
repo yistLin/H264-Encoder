@@ -76,11 +76,11 @@ int encode_Y_intra4x4_block(int cur_pos, MacroBlock& mb, MacroBlock& decoded_blo
 
   auto get_4x4_block = [&](int index, int pos) {
     if (index == -1)
-      return std::experimental::optional<std::reference_wrapper<Block4x4>>();
+      return std::experimental::optional<Block4x4>();
     else if (index == mb.mb_index)
-      return std::experimental::optional<std::reference_wrapper<Block4x4>>(decoded_block.get_Y_4x4_block(pos));
+      return std::experimental::optional<Block4x4>(decoded_block.get_Y_4x4_block(pos));
     else
-      return std::experimental::optional<std::reference_wrapper<Block4x4>>(decoded_blocks.at(index).get_Y_4x4_block(pos));
+      return std::experimental::optional<Block4x4>(decoded_blocks.at(index).get_Y_4x4_block(pos));
   };
 
   auto get_UL_4x4_block = [&]() {
