@@ -3,7 +3,6 @@
 
 #include <fstream>
 #include <vector>
-#include <cstdint>
 
 #include "log.h"
 
@@ -11,9 +10,9 @@ class RawFrame {
 public:
   int width;
   int height;
-  std::vector<std::uint8_t> Y;
-  std::vector<std::uint8_t> Cb;
-  std::vector<std::uint8_t> Cr;
+  std::vector<int> Y;
+  std::vector<int> Cb;
+  std::vector<int> Cr;
 
   RawFrame(const int, const int);
 };
@@ -24,9 +23,9 @@ public:
   int height;
   int raw_width;
   int raw_height;
-  std::vector<std::uint8_t> Y;
-  std::vector<std::uint8_t> Cb;
-  std::vector<std::uint8_t> Cr;
+  std::vector<int> Y;
+  std::vector<int> Cb;
+  std::vector<int> Cr;
 
   PadFrame(const int, const int);
   PadFrame(const RawFrame&);
@@ -50,7 +49,6 @@ public:
   Reader(std::string, const int, const int);
   RawFrame read_one_frame();
   PadFrame get_padded_frame();
-  double clip(const double&);
 };
 
 #endif // IO

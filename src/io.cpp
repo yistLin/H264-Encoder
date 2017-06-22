@@ -43,9 +43,9 @@ PadFrame::PadFrame(const RawFrame& rf) {
     this->Cb.insert(pad_cb_ptr, cb_ptr, cb_ptr + rf.width);
 
     // Insert padding pixels (additional width)
-    this->Y.insert(pad_y_ptr + rf.width, this->width - rf.width, (std::uint8_t)0);
-    this->Cr.insert(pad_cr_ptr + rf.width, this->width - rf.width, (std::uint8_t)0);
-    this->Cb.insert(pad_cb_ptr + rf.width, this->width - rf.width, (std::uint8_t)0);
+    this->Y.insert(pad_y_ptr + rf.width, this->width - rf.width, 0);
+    this->Cr.insert(pad_cr_ptr + rf.width, this->width - rf.width, 0);
+    this->Cb.insert(pad_cb_ptr + rf.width, this->width - rf.width, 0);
 
     // Move pointers
     y_ptr += rf.width;
@@ -58,9 +58,9 @@ PadFrame::PadFrame(const RawFrame& rf) {
 
   // Insert padding pixels (additional height)
   for (int i = rf.height; i < this->height; i++) {
-    this->Y.insert(pad_y_ptr, this->width, (std::uint8_t)0);
-    this->Cr.insert(pad_cr_ptr, this->width, (std::uint8_t)0);
-    this->Cb.insert(pad_cb_ptr, this->width, (std::uint8_t)0);
+    this->Y.insert(pad_y_ptr, this->width, 0);
+    this->Cr.insert(pad_cr_ptr, this->width, 0);
+    this->Cb.insert(pad_cb_ptr, this->width, 0);
 
     // Move pointers
     pad_y_ptr += this->width;
@@ -107,15 +107,6 @@ std::size_t Reader::get_file_size() {
   return end_pos - begin_pos;
 }
 
-double Reader::clip(const double& val) {
-  if (val < 0.0)
-    return 0.0;
-  else if (val > 255.0)
-    return 255.0;
-  else
-    return val;
-}
-
 void Reader::convert_rgb_to_ycrcb(unsigned char* rgb_pixel, double& y, double& cr, double& cb) {
   double b, g, r;
 
@@ -125,9 +116,9 @@ void Reader::convert_rgb_to_ycrcb(unsigned char* rgb_pixel, double& y, double& c
   b = (double)rgb_pixel[2];
 
   // Convert from RGB to YCrCb
-  y = this->clip(0.299 * r + 0.587 * g + 0.114 * b);
-  cb = this->clip(0.564 * (b - y));
-  cr = this->clip(0.713 * (r - y));
+  y = 0.299 * r + 0.587 * g + 0.114 * b;
+  cb = 0.564 * (b - y);
+  cr = 0.713 * (r - y);
 }
 
 RawFrame Reader::read_one_frame() {
@@ -147,9 +138,9 @@ RawFrame Reader::read_one_frame() {
     this->convert_rgb_to_ycrcb(rgb_pixel, y, cr, cb);
 
     // Fill to pixel array
-    rf.Y[i] = (std::uint8_t)y;
-    rf.Cb[i] = (std::uint8_t)cb;
-    rf.Cr[i] = (std::uint8_t)cr;
+    rf.Y[i] = y;
+    rf.Cb[i] = cb;
+    rf.Cr[i] = cr;
   }
 
   return rf;
@@ -166,9 +157,9 @@ PadFrame Reader::get_padded_frame() {
   pf.Cr.reserve(pixels_per_unit);
   pf.Cb.reserve(pixels_per_unit);
 
-  std::fill(pf.Y.begin(), pf.Y.end(), (std::uint8_t)0);
-  std::fill(pf.Cr.begin(), pf.Cr.end(), (std::uint8_t)0);
-  std::fill(pf.Cb.begin(), pf.Cb.end(), (std::uint8_t)0);
+  std::fill(pf.Y.begin(), pf.Y.end(), 0);
+  std::fill(pf.Cr.begin(), pf.Cr.end(), 0);
+  std::fill(pf.Cb.begin(), pf.Cb.end(), 0);
 
   for (int i = 0; i < pf.raw_height; i++) {
     for (int j = 0; j < pf.raw_width; j++) {
@@ -178,9 +169,9 @@ PadFrame Reader::get_padded_frame() {
       this->convert_rgb_to_ycrcb(rgb_pixel, y, cr, cb);
 
       // Fill to pixel array
-      pf.Y[i*pf.width+j] = (std::uint8_t)y;
-      pf.Cb[i*pf.width+j] = (std::uint8_t)cb;
-      pf.Cr[i*pf.width+j] = (std::uint8_t)cr;
+      pf.Y[i*pf.width+j] = y;
+      pf.Cb[i*pf.width+j] = cb;
+      pf.Cr[i*pf.width+j] = cr;
     }
   }
 
