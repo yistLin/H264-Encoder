@@ -4,23 +4,9 @@
 #include <cmath>
 #include "block.h"
 
-// Important definition
-
 // MAX QP for luma is 51, MAX QP for chroma is 39
 const int LUMA_QP = 28;
-const int CHROMA_QP = 28;
-const int mat_Cf[4][4] = {
-  {1,  1,  1,  1},
-  {2,  1, -1, -2},
-  {1, -1, -1,  1},
-  {1, -2,  2, -1}
-};
-const int mat_Cf_T[4][4] = {
-  {1,  2,  1,  1},
-  {1,  1, -1, -2},
-  {1, -1, -1,  2},
-  {1, -2,  1, -1}
-};
+const int CHROMA_QP = 8;
 const int mat_MF[6][3] = {
   {13107, 5243, 8066},
   {11916, 4660, 7490},
@@ -28,18 +14,6 @@ const int mat_MF[6][3] = {
   {9362,  3647, 5825},
   {8192,  3355, 5243},
   {7282,  2893, 4559}
-};
-const int mat_Ci[4][4] = {
-  {2,  2,  2,  1},
-  {2,  1, -2, -2},
-  {2, -1, -2,  2},
-  {2, -2,  2, -1}
-};
-const int mat_Ci_T[4][4] = {
-  {2,  2,  2,  2},
-  {2,  1, -1, -2},
-  {2, -2, -2,  2},
-  {1, -2,  2, -1}
 };
 const int mat_V[6][3] = {
   {10, 16, 13},
@@ -68,8 +42,8 @@ inline void forward_qdct(T&, const int, const int);
 template <typename T>
 inline void inverse_qdct(T&, const int, const int);
 
-inline void forward_qdct4x4(Block4x4&, const int);
-inline void inverse_qdct4x4(Block4x4&, const int);
+inline void forward_qdct4x4(Block4x4, const int);
+inline void inverse_qdct4x4(Block4x4, const int);
 
 // Public interface
 void qdct_luma16x16_intra(Block16x16&);

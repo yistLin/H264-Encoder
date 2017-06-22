@@ -386,7 +386,7 @@ inline void forward_qdct(T& block, const int BLOCK_SIZE, const int QP) {
   }
 }
 
-inline void forward_qdct4x4(Block4x4& block, const int QP) {
+inline void forward_qdct4x4(Block4x4 block, const int QP) {
 
   // source 4x4 block, target 4x4 block
   int mat_x[4][4], mat_z[4][4];
@@ -408,7 +408,7 @@ inline void forward_qdct4x4(Block4x4& block, const int QP) {
   }
 }
 
-inline void inverse_qdct4x4(Block4x4& block, const int QP) {
+inline void inverse_qdct4x4(Block4x4 block, const int QP) {
 
   // source 4x4 block, target 4x4 block
   int mat_x[4][4], mat_z[4][4];
@@ -522,7 +522,7 @@ void qdct_chroma8x8_intra(Block8x8& block) {
   forward_qdct(block, 8, CHROMA_QP);
 }
 void qdct_luma4x4_intra(Block4x4 block) {
-  forward_qdct4x4(block, CHROMA_QP);
+  forward_qdct4x4(block, LUMA_QP);
 }
 void inv_qdct_luma16x16_intra(Block16x16& block) {
   inverse_qdct(block, 16, LUMA_QP);
