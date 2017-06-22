@@ -7,7 +7,8 @@ Util::Util(const int argc, const char *argv[]) {
                                              {"d", "false"},
                                              {"size", "0x0"},
                                              {"input", "snoopy.avi"},
-                                             {"output", "snoopy.264"}};
+                                             {"output", "snoopy.264"},
+                                             {"t", "-1"}};
 
   // get arguments from command line
   std::string key;
@@ -54,4 +55,6 @@ Util::Util(const int argc, const char *argv[]) {
   this->logger.log(Level::VERBOSE, "Setting input file to " + this->input_file);
   this->output_file = options["output"];
   this->logger.log(Level::VERBOSE, "Setting output file to " + this->output_file);
+
+  this->test_frame = std::stoul(options["t"]);
 }

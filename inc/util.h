@@ -10,6 +10,7 @@
 class Util {
 public:
   unsigned int width, height;
+  int test_frame;
   std::string input_file, output_file;
 
   Util(const int, const char*[]);
