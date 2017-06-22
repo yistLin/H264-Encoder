@@ -29,11 +29,14 @@ void encode_Y_block(MacroBlock& mb, std::vector<MacroBlock>& decoded_blocks, Fra
 
   // compare the error of two predictions
   if (error_intra4x4 < error_intra16x16) {
-    f_logger.log(Level::DEBUG, "using intra4x4\terror: " + std::to_string(error_intra4x4));
     mb = temp_block;
     decoded_blocks.at(mb.mb_index) = temp_decoded_block;
+    std::string mode = "\tmode:";
+    for (auto& m : mb.intra4x4_Y_mode)
+      mode += " " + std::to_string(static_cast<int>(m));
+    f_logger.log(Level::DEBUG, "luma intra4x4\terror: " + std::to_string(error_intra4x4) + mode);
   } else {
-    f_logger.log(Level::DEBUG, "using intra16x16\terror: " + std::to_string(error_intra16x16));
+    f_logger.log(Level::DEBUG, "luma intra16x16\terror: " + std::to_string(error_intra16x16) + "\tmode: " + std::to_string(static_cast<int>(mb.intra16x16_Y_mode)));
   }
 }
 
@@ -181,7 +184,8 @@ int encode_Y_intra4x4_block(int cur_pos, MacroBlock& mb, MacroBlock& decoded_blo
 }
 
 void encode_Cr_Cb_block(MacroBlock& mb, std::vector<MacroBlock>& decoded_blocks, Frame& frame) {
-  encode_Cr_Cb_intra8x8_block(mb, decoded_blocks, frame);
+  int error_intra8x8 = encode_Cr_Cb_intra8x8_block(mb, decoded_blocks, frame);
+  f_logger.log(Level::DEBUG, "chroma intra8x8\terror: " + std::to_string(error_intra8x8) + "\tmode: " + std::to_string(static_cast<int>(mb.intra_Cr_Cb_mode)));
 }
 
 int encode_Cr_Cb_intra8x8_block(MacroBlock& mb, std::vector<MacroBlock>& decoded_blocks, Frame& frame) {
