@@ -61,8 +61,8 @@ enum class IntraChromaMode {
   PLANE
 };
 
-std::tuple<int, Intra4x4Mode> intra4x4(Block4x4&, std::experimental::optional<std::reference_wrapper<Block4x4>>, std::experimental::optional<std::reference_wrapper<Block4x4>>, 
-                                        std::experimental::optional<std::reference_wrapper<Block4x4>>, std::experimental::optional<std::reference_wrapper<Block4x4>>);
+std::tuple<int, Intra4x4Mode> intra4x4(Block4x4, std::experimental::optional<Block4x4>, std::experimental::optional<Block4x4>,
+                                        std::experimental::optional<Block4x4>, std::experimental::optional<Block4x4>);
 void get_intra4x4(CopyBlock4x4&, const Predictor&, const Intra4x4Mode);
 void intra4x4_vertical(CopyBlock4x4&, const Predictor&);
 void intra4x4_horizontal(CopyBlock4x4&, const Predictor&);
@@ -73,10 +73,10 @@ void intra4x4_verticalright(CopyBlock4x4&, const Predictor&);
 void intra4x4_horizontaldown(CopyBlock4x4&, const Predictor&);
 void intra4x4_verticalleft(CopyBlock4x4&, const Predictor&);
 void intra4x4_horizontalup(CopyBlock4x4&, const Predictor&);
-Predictor get_intra4x4_predictor(std::experimental::optional<std::reference_wrapper<Block4x4>>, std::experimental::optional<std::reference_wrapper<Block4x4>>, 
-                                  std::experimental::optional<std::reference_wrapper<Block4x4>>, std::experimental::optional<std::reference_wrapper<Block4x4>>);
-void intra4x4_reconstruct(Block4x4&, std::experimental::optional<std::reference_wrapper<Block4x4>>, std::experimental::optional<std::reference_wrapper<Block4x4>>, 
-                            std::experimental::optional<std::reference_wrapper<Block4x4>>, std::experimental::optional<std::reference_wrapper<Block4x4>>, const Intra4x4Mode);
+Predictor get_intra4x4_predictor(std::experimental::optional<Block4x4>, std::experimental::optional<Block4x4>,
+                                  std::experimental::optional<Block4x4>, std::experimental::optional<Block4x4>);
+void intra4x4_reconstruct(Block4x4, std::experimental::optional<Block4x4>, std::experimental::optional<Block4x4>,
+                            std::experimental::optional<Block4x4>, std::experimental::optional<Block4x4>, const Intra4x4Mode);
 
 std::tuple<int, Intra16x16Mode> intra16x16(Block16x16&, std::experimental::optional<std::reference_wrapper<Block16x16>>, std::experimental::optional<std::reference_wrapper<Block16x16>>, std::experimental::optional<std::reference_wrapper<Block16x16>>);
 void get_intra16x16(Block16x16&, const Predictor&, const Intra16x16Mode);

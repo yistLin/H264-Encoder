@@ -27,11 +27,11 @@ int SAD(InputIt1 first1, InputIt1 last1, InputIt2 first2, OutputIt result) {
  * overwrite residual on input block
  * return the least cost mode
  */
-std::tuple<int, Intra4x4Mode> intra4x4(Block4x4& block, 
-  std::experimental::optional<std::reference_wrapper<Block4x4>> ul, 
-  std::experimental::optional<std::reference_wrapper<Block4x4>> u,
-  std::experimental::optional<std::reference_wrapper<Block4x4>> ur,
-  std::experimental::optional<std::reference_wrapper<Block4x4>> l) {
+std::tuple<int, Intra4x4Mode> intra4x4(Block4x4 block,
+  std::experimental::optional<Block4x4> ul,
+  std::experimental::optional<Block4x4> u,
+  std::experimental::optional<Block4x4> ur,
+  std::experimental::optional<Block4x4> l) {
 
   // Get predictors
   Predictor predictor = get_intra4x4_predictor(ul, u, ur, l);
@@ -63,11 +63,11 @@ std::tuple<int, Intra4x4Mode> intra4x4(Block4x4& block,
 /* Input residual, neighbors and prediction mode
  * overwrite reconstructed block on resudual
  */
-void intra4x4_reconstruct(Block4x4& block, 
-  std::experimental::optional<std::reference_wrapper<Block4x4>> ul,
-  std::experimental::optional<std::reference_wrapper<Block4x4>> u,
-  std::experimental::optional<std::reference_wrapper<Block4x4>> ur,
-  std::experimental::optional<std::reference_wrapper<Block4x4>> l,
+void intra4x4_reconstruct(Block4x4 block,
+  std::experimental::optional<Block4x4> ul,
+  std::experimental::optional<Block4x4> u,
+  std::experimental::optional<Block4x4> ur,
+  std::experimental::optional<Block4x4> l,
   const Intra4x4Mode mode) {
 
   CopyBlock4x4 pred;
@@ -290,7 +290,7 @@ void intra4x4_horizontalup(CopyBlock4x4& pred, const Predictor& predictor) {
   // zHU = 5
   pred[7]  = pred[9] = ((p[11] + (3 * p[12]) + 2) >> 2);
   // zHU > 5
-  pred[12] = pred[10] = pred[11] = 
+  pred[12] = pred[10] = pred[11] =
   pred[13] = pred[14] = pred[15] = p[12];
 }
 
@@ -299,12 +299,12 @@ void intra4x4_horizontalup(CopyBlock4x4& pred, const Predictor& predictor) {
  * [1..4]: downmost row of u
  * [5..8]: downmost row of ur
  * [9..12]: rightmost column of l
- */ 
+ */
 Predictor get_intra4x4_predictor(
-  std::experimental::optional<std::reference_wrapper<Block4x4>> ul,
-  std::experimental::optional<std::reference_wrapper<Block4x4>> u,
-  std::experimental::optional<std::reference_wrapper<Block4x4>> ur,
-  std::experimental::optional<std::reference_wrapper<Block4x4>> l) {
+  std::experimental::optional<Block4x4> ul,
+  std::experimental::optional<Block4x4> u,
+  std::experimental::optional<Block4x4> ur,
+  std::experimental::optional<Block4x4> l) {
 
   Predictor predictor(4);
   std::vector<int>& p = predictor.pred_pel;
@@ -354,9 +354,9 @@ Predictor get_intra4x4_predictor(
  * overwrite residual on input block
  * return the least cost mode
  */
-std::tuple<int, Intra16x16Mode> intra16x16(Block16x16& block, 
-  std::experimental::optional<std::reference_wrapper<Block16x16>> ul, 
-  std::experimental::optional<std::reference_wrapper<Block16x16>> u, 
+std::tuple<int, Intra16x16Mode> intra16x16(Block16x16& block,
+  std::experimental::optional<std::reference_wrapper<Block16x16>> ul,
+  std::experimental::optional<std::reference_wrapper<Block16x16>> u,
   std::experimental::optional<std::reference_wrapper<Block16x16>> l) {
 
   // Get predictors
@@ -385,9 +385,9 @@ std::tuple<int, Intra16x16Mode> intra16x16(Block16x16& block,
 /* Input residual, neighbors and prediction mode
  * overwrite reconstructed block on resudual
  */
-void intra16x16_reconstruct(Block16x16& block, 
-  std::experimental::optional<std::reference_wrapper<Block16x16>> ul, 
-  std::experimental::optional<std::reference_wrapper<Block16x16>> u, 
+void intra16x16_reconstruct(Block16x16& block,
+  std::experimental::optional<std::reference_wrapper<Block16x16>> ul,
+  std::experimental::optional<std::reference_wrapper<Block16x16>> u,
   std::experimental::optional<std::reference_wrapper<Block16x16>> l,
   const Intra16x16Mode mode) {
 
@@ -498,10 +498,10 @@ void intra16x16_plane(Block16x16& pred, const Predictor& predictor) {
  * [0]: downmost and rightmost pixel of ul
  * [1..16]: downmost row of u
  * [17..32]: rightmost column of l
- */ 
+ */
 Predictor get_intra16x16_predictor(
-  std::experimental::optional<std::reference_wrapper<Block16x16>> ul, 
-  std::experimental::optional<std::reference_wrapper<Block16x16>> u, 
+  std::experimental::optional<std::reference_wrapper<Block16x16>> ul,
+  std::experimental::optional<std::reference_wrapper<Block16x16>> u,
   std::experimental::optional<std::reference_wrapper<Block16x16>> l) {
 
   Predictor predictor(16);
@@ -585,9 +585,9 @@ std::tuple<int, IntraChromaMode> intra8x8_chroma(Block8x8& cr_block,
 /* Input residual, neighbors and prediction mode
  * overwrite reconstructed block on resudual
  */
-void intra8x8_chroma_reconstruct(Block8x8& block, 
-  std::experimental::optional<std::reference_wrapper<Block8x8>> ul, 
-  std::experimental::optional<std::reference_wrapper<Block8x8>> u, 
+void intra8x8_chroma_reconstruct(Block8x8& block,
+  std::experimental::optional<std::reference_wrapper<Block8x8>> ul,
+  std::experimental::optional<std::reference_wrapper<Block8x8>> u,
   std::experimental::optional<std::reference_wrapper<Block8x8>> l,
   const IntraChromaMode mode) {
 
@@ -715,10 +715,10 @@ void intra8x8_chroma_plane(Block8x8& pred, const Predictor& predictor) {
  * [0]: downmost and rightmost pixel of ul
  * [1..8]: downmost row of u
  * [9..16]: rightmost column of l
- */ 
+ */
 Predictor get_intra8x8_chroma_predictor(
-  std::experimental::optional<std::reference_wrapper<Block8x8>> ul, 
-  std::experimental::optional<std::reference_wrapper<Block8x8>> u, 
+  std::experimental::optional<std::reference_wrapper<Block8x8>> ul,
+  std::experimental::optional<std::reference_wrapper<Block8x8>> u,
   std::experimental::optional<std::reference_wrapper<Block8x8>> l) {
 
   Predictor predictor(8);

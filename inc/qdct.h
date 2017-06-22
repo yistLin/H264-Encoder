@@ -74,9 +74,9 @@ inline void inverse_qdct4x4(Block4x4&, const int);
 // Public interface
 void qdct_luma16x16_intra(Block16x16&);
 void qdct_chroma8x8_intra(Block8x8&);
-void qdct_luma4x4_intra(Block4x4&);
+void qdct_luma4x4_intra(Block4x4);
 void inv_qdct_luma16x16_intra(Block16x16&);
 void inv_qdct_chroma8x8_intra(Block8x8&);
-void inv_qdct_luma4x4_intra(Block4x4&);
+void inv_qdct_luma4x4_intra(Block4x4);
 
 #endif // QDCT

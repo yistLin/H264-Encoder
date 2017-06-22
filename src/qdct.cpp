@@ -27,7 +27,7 @@ void forward_dct4x4(const int mat_x[][4], int mat_z[][4]) {
     mat_temp[i][3] = t3 - (t2 << 1);
   }
 
-  // Vertical 
+  // Vertical
   for (int i = 0; i < 4; i++) {
     p0 = mat_temp[0][i];
     p1 = mat_temp[1][i];
@@ -73,7 +73,7 @@ void inverse_dct4x4(const int mat_x[][4], int mat_z[][4]) {
     mat_temp[i][3] = p0 - p3;
   }
 
-  // Vertical 
+  // Vertical
   for (int i = 0; i < 4; i++) {
     t0 = mat_temp[0][i];
     t1 = mat_temp[1][i];
@@ -521,7 +521,7 @@ void qdct_luma16x16_intra(Block16x16& block) {
 void qdct_chroma8x8_intra(Block8x8& block) {
   forward_qdct(block, 8, CHROMA_QP);
 }
-void qdct_luma4x4_intra(Block4x4& block) {
+void qdct_luma4x4_intra(Block4x4 block) {
   forward_qdct4x4(block, CHROMA_QP);
 }
 void inv_qdct_luma16x16_intra(Block16x16& block) {
@@ -530,6 +530,6 @@ void inv_qdct_luma16x16_intra(Block16x16& block) {
 void inv_qdct_chroma8x8_intra(Block8x8& block) {
   inverse_qdct(block, 8, CHROMA_QP);
 }
-void inv_qdct_luma4x4_intra(Block4x4& block) {
+void inv_qdct_luma4x4_intra(Block4x4 block) {
   inverse_qdct4x4(block, LUMA_QP);
 }
