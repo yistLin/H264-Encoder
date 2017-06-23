@@ -32,9 +32,9 @@ void inverse_quantize4x4(const int[][4], int[][4], const int);
 void forward_quantize2x2(const int[][2], int[][2], const int);
 void inverse_quantize2x2(const int[][2], int[][2], const int);
 void forward_hadamard4x4(const int[][4], int[][4]);
-void inverse__hadamard4x4(const int[][4], int[][4]);
-void forward_hadamard2x2(const int[][4], int[][4]);
-void inverse__hadamard2x2(const int[][4], int[][4]);
+void inverse_hadamard4x4(const int[][4], int[][4]);
+void forward_hadamard2x2(const int[][2], int[][2]);
+void inverse_hadamard2x2(const int[][2], int[][2]);
 
 // Main QDCT function used as an expandable funciton
 template <typename T>
