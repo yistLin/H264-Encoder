@@ -2,7 +2,7 @@ COMPILER = $(CXX)
 
 SRC_DIR = ./src
 OBJ_DIR = ./obj
-BIN_DIR = ./bin
+BIN_DIR = ./
 INC_DIR = ./inc
 
 TARGET = $(BIN_DIR)/encoder
