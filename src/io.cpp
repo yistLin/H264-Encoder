@@ -153,13 +153,13 @@ PadFrame Reader::get_padded_frame() {
 
   // Reserve the pixel vectors
   int pixels_per_unit = pf.width * pf.height;
-  pf.Y.reserve(pixels_per_unit);
-  pf.Cr.reserve(pixels_per_unit);
-  pf.Cb.reserve(pixels_per_unit);
+  pf.Y.resize(pixels_per_unit);
+  pf.Cr.resize(pixels_per_unit);
+  pf.Cb.resize(pixels_per_unit);
 
   std::fill(pf.Y.begin(), pf.Y.end(), 0);
-  std::fill(pf.Cr.begin(), pf.Cr.end(), 0);
-  std::fill(pf.Cb.begin(), pf.Cb.end(), 0);
+  std::fill(pf.Cr.begin(), pf.Cr.end(), 128);
+  std::fill(pf.Cb.begin(), pf.Cb.end(), 128);
 
   for (int i = 0; i < pf.raw_height; i++) {
     for (int j = 0; j < pf.raw_width; j++) {
