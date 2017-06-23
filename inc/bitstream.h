@@ -14,6 +14,7 @@ public:
   Bitstream();
   Bitstream(std::uint8_t[], int);
   Bitstream(const Bitstream&);
+  Bitstream(const std::string&);
 
   Bitstream operator+(const Bitstream&);
   Bitstream& operator+=(const Bitstream&);

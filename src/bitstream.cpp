@@ -1,3 +1,4 @@
+#include <iostream>
 #include "bitstream.h"
 
 Bitstream::Bitstream(): nb_bits(0) {}
@@ -13,6 +14,17 @@ Bitstream::Bitstream(std::uint8_t bits[], int digit) {
 Bitstream::Bitstream(const Bitstream& a) {
   nb_bits = a.nb_bits;
   buffer.insert(buffer.end(), a.buffer.begin(), a.buffer.end());
+}
+
+Bitstream::Bitstream(const std::string& s) {
+  nb_bits = s.size();
+  int nb_int = nb_bits % 8 == 0 ? nb_bits/8: nb_bits/8 + 1;
+  int trail_bits = nb_bits % 8;
+  
+  for (int i = 0; i < nb_int - 1; i++)
+    buffer.push_back( (std::bitset<8>(s.substr(i*8, 8)).to_ulong()) );
+
+  buffer.push_back( (std::bitset<8>(s.substr((nb_int-1)*8, 8)).to_ulong() << (8-trail_bits)) );
 }
 
 Bitstream& Bitstream::operator+=(const Bitstream& a) {
