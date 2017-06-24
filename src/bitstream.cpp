@@ -3,6 +3,16 @@
 
 Bitstream::Bitstream(): nb_bits(0) {}
 
+Bitstream::Bitstream(const bool& flag) {
+  nb_bits = 1;
+  if (flag) {
+    buffer.push_back(static_cast<std::uint8_t>(1));
+  }
+  else {
+    buffer.push_back(static_cast<std::uint8_t>(0));
+  }
+}
+
 Bitstream::Bitstream(std::uint8_t bits[], int digit) {
   nb_bits = digit;
 
@@ -25,6 +35,11 @@ Bitstream::Bitstream(const std::string& s) {
     buffer.push_back( (std::bitset<8>(s.substr(i*8, 8)).to_ulong()) );
 
   buffer.push_back( (std::bitset<8>(s.substr((nb_int-1)*8, 8)).to_ulong() << (8-trail_bits)) );
+}
+
+Bitstream::Bitstream(const std::uint8_t u, int digit) {
+  nb_bits = digit;
+  buffer.push_back(u);
 }
 
 Bitstream& Bitstream::operator+=(const Bitstream& a) {

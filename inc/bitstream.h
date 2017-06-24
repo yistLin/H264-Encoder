@@ -12,9 +12,11 @@ public:
   std::vector<std::uint8_t> buffer;
 
   Bitstream();
+  Bitstream(const bool&);
   Bitstream(std::uint8_t[], int);
   Bitstream(const Bitstream&);
   Bitstream(const std::string&);
+  Bitstream(const std::uint8_t, int);
 
   Bitstream operator+(const Bitstream&);
   Bitstream& operator+=(const Bitstream&);
