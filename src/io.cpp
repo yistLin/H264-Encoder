@@ -109,6 +109,8 @@ PadFrame Reader::get_padded_frame() {
   return pf;
 }
 
+std::uint8_t Writer::stopcode[4] = {0x00, 0x00, 0x00, 0x01};
+
 Writer::Writer(std::string filename) {
   // Open the file stream for output file
   file.open(filename, std::ios::out | std::ios::binary);
@@ -118,8 +120,6 @@ Writer::Writer(std::string filename) {
   }
 }
 
-std::uint8_t Writer::stopcode[4] = {0x00, 0x00, 0x00, 0x01};
-
 void Writer::write_sps(const int width, const int height, const int num_frames) {
   Bitstream output(stopcode, 32);
   Bitstream rbsp = seq_parameter_set_rbsp(width, height, num_frames);
@@ -128,6 +128,7 @@ void Writer::write_sps(const int width, const int height, const int num_frames) 
   output += nal_unit.get();
 
   file.write((char*)&output.buffer[0], output.buffer.size());
+  file.flush();
 }
 
 void Writer::write_pps() {
@@ -137,16 +138,19 @@ void Writer::write_pps() {
 
   output += nal_unit.get();
   file.write((char*)&output.buffer[0], output.buffer.size());
+  file.flush();
 }
 
-void Writer::write_slice(const Bitstream& slice_data) {
+void Writer::write_slice(const int frame_num, const Bitstream& slice_data) {
   Bitstream output(stopcode, 32);
-  Bitstream rbsp = slice_layer_without_partitioning_rbsp(slice_data);
+  Bitstream rbsp = slice_layer_without_partitioning_rbsp(frame_num, slice_data);
+  rbsp += Bitstream((std::uint8_t)0x80, 8);
 
   NALUnit nal_unit(NALRefIdc::HIGHEST, NALType::IDR, rbsp);
 
   output += nal_unit.get();
   file.write((char*)&output.buffer[0], output.buffer.size());
+  file.flush();
 }
 
 Bitstream Writer::seq_parameter_set_rbsp(const int width, const int height, const int num_frames) {
@@ -161,7 +165,7 @@ Bitstream Writer::seq_parameter_set_rbsp(const int width, const int height, cons
   unsigned int seq_parameter_set_id = 0;  // ue(v)
   unsigned int log2_max_frame_num_minus4 = static_cast<unsigned int>(log2(num_frames) - 4); // ue(v)
   unsigned int pic_order_cnt_type = 0;  // ue(v)
-  unsigned int log2_max_pic_order_cnt_lsb_minus4 = 0; // ue(v)
+  unsigned int log2_max_pic_order_cnt_lsb_minus4 = log2_max_frame_num_minus4; // ue(v)
   unsigned int num_ref_frames = 0;  // ue(v)
   bool gaps_in_frame_num_value_allowed_flag = false;  // u(1)
   unsigned int pic_width_in_mbs_minus_1 = (width % 16 == 0)? (width / 16) - 1 : width / 16; // ue(v)
@@ -170,6 +174,10 @@ Bitstream Writer::seq_parameter_set_rbsp(const int width, const int height, cons
   bool direct_8x8_inference_flag = false; // u(1)
   bool frame_cropping_flag = false; // u(1)
   bool vui_parameters_present_flag = false; // u(1)
+
+  // slice header info
+  log2_max_frame_num = log2_max_frame_num_minus4 + 4;
+  log2_max_pic_order_cnt_lsb = log2_max_pic_order_cnt_lsb_minus4 + 4;
 
   sodb = Bitstream(profile_idc, 8) + Bitstream(constraint_set0_flag) + 
          Bitstream(constraint_set1_flag) + Bitstream(constraint_set2_flag) + 
@@ -215,6 +223,27 @@ Bitstream Writer::pic_parameter_set_rbsp() {
   return sodb.rbsp_trailing_bits();
 }
 
-Bitstream Writer::slice_layer_without_partitioning_rbsp(const Bitstream& slice_data) {
-  return Bitstream() + slice_data;
+Bitstream Writer::slice_layer_without_partitioning_rbsp(const int _frame_num, const Bitstream& slice_data) {
+  Bitstream header = slice_header(_frame_num);
+  return (header + slice_data).rbsp_trailing_bits();
+}
+
+Bitstream Writer::slice_header(const int _frame_num) {
+  Bitstream sodb;
+  
+  unsigned int first_mb_in_slice = 0;  // ue(v)
+  unsigned int slice_type = 2; // ue(v)
+  unsigned int pic_parameter_set_id = 0; // ue(v)
+  unsigned int frame_num = _frame_num;  // u(v)
+  unsigned int idr_pic_id = _frame_num; // ue(v)
+  unsigned int pic_order_cnt_lsb = _frame_num;  // u(v)
+  int slice_qp_delta = 0;  // se(v)
+  unsigned int disable_deblocking_filter_idc = 1; // ue(v)
+
+  sodb = ue(first_mb_in_slice) + ue(slice_type) +
+         ue(pic_parameter_set_id) + Bitstream(frame_num, log2_max_frame_num) +
+         ue(idr_pic_id) + Bitstream(pic_order_cnt_lsb, log2_max_pic_order_cnt_lsb) +
+         se(slice_qp_delta) + ue(disable_deblocking_filter_idc);
+
+  return sodb;
 }

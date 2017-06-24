@@ -39,16 +39,19 @@ public:
 
   void write_sps(const int, const int, const int);
   void write_pps();
-  void write_slice(const Bitstream&);
+  void write_slice(const int, const Bitstream&);
 
 private:
   Log logger;
   std::fstream file;
   static std::uint8_t stopcode[4];
+  unsigned int log2_max_frame_num;
+  unsigned int log2_max_pic_order_cnt_lsb;
 
   Bitstream seq_parameter_set_rbsp(const int, const int, const int);
   Bitstream pic_parameter_set_rbsp();
-  Bitstream slice_layer_without_partitioning_rbsp(const Bitstream&);
+  Bitstream slice_layer_without_partitioning_rbsp(const int, const Bitstream&);
+  Bitstream slice_header(const int);
 };
 
 #endif // IO
