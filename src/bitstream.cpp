@@ -133,6 +133,10 @@ Bitstream Bitstream::operator+(const Bitstream& a) {
   return c;
 }
 
+bool Bitstream::byte_align() {
+  return (nb_bits % 8 == 0) ? true : false;
+}
+
 Bitstream Bitstream::rbsp_trailing_bits() {
   // rbsp_stop_one_bit
   Bitstream rbsp = (*this) + Bitstream(static_cast<std::uint8_t>(1), 1);

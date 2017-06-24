@@ -22,6 +22,7 @@ public:
   Bitstream operator+(const Bitstream&);
   Bitstream& operator+=(const Bitstream&);
 
+  bool byte_align();
   Bitstream rbsp_trailing_bits();
 
   // for testing
