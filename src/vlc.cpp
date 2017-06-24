@@ -205,7 +205,7 @@ void scan_zigzag(Block4x4 block, int tblock[]) {
     tblock[mat_zigzag4x4[i]] = block[i];
 }
 
-Bitstream cavlc_block4x4(Block4x4 block, const int nC) {
+std::pair<Bitstream, int> cavlc_block4x4(Block4x4 block, const int nC) {
   int mat_x[16];
 
   // for (int i = 0; i < 16; i++) {
@@ -327,7 +327,7 @@ Bitstream cavlc_block4x4(Block4x4 block, const int nC) {
               }
               else
                 encoded_str = "0";
-              while (encoded_str.length() < level_suffix_len)
+              while (encoded_str.length() < (unsigned int)level_suffix_len)
                 encoded_str = "0" + encoded_str;
               level_vlc_str += encoded_str;
             }
@@ -389,5 +389,10 @@ Bitstream cavlc_block4x4(Block4x4 block, const int nC) {
 
   std::string final_str = num_vlc_table[nC][total_coeff][trail_ones] + ones_str + level_vlc_str + zero_vlc_table[total_zeros][total_coeff] + run_vlc_str;
   printf("final_str = %s\n", final_str.c_str());
-  return Bitstream(final_str);
+  return std::make_pair(Bitstream(final_str), total_coeff);
 }
+
+std::pair<Bitstream, int> cavlc_block2x2(Block2x2 block, const int nC) {
+  return std::make_pair(Bitstream(), 0);
+}
+
