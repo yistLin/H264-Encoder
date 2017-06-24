@@ -60,7 +60,7 @@ class Writer {
 public:
   Writer(std::string);
 
-  void write_sps();
+  void write_sps(const int, const int, const int);
   void write_pps();
   void write_slice(const Bitstream&);
 
@@ -69,7 +69,7 @@ private:
   std::fstream file;
   static std::uint8_t stopcode[4];
 
-  Bitstream seq_parameter_set_rbsp();
+  Bitstream seq_parameter_set_rbsp(const int, const int, const int);
   Bitstream pic_parameter_set_rbsp();
   Bitstream slice_layer_without_partitioning_rbsp(const Bitstream&);
 };

@@ -189,15 +189,15 @@ Writer::Writer(std::string filename) {
 
 std::uint8_t Writer::stopcode[4] = {0x00, 0x00, 0x00, 0x01};
 
-void Writer::write_sps() {
+void Writer::write_sps(const int width, const int height, const int num_frames) {
   Bitstream output(stopcode, 32);
-  Bitstream rbsp = seq_parameter_set_rbsp();
-  
+  Bitstream rbsp = seq_parameter_set_rbsp(width, height, num_frames);
   NALUnit nal_unit(NALRefIdc::HIGHEST, NALType::SPS, rbsp);
 
   output += nal_unit.get();
 
   file.write((char*)&output.buffer[0], output.buffer.size());
+  file.close();
 }
 
 void Writer::write_pps() {
@@ -207,7 +207,6 @@ void Writer::write_pps() {
   NALUnit nal_unit(NALRefIdc::HIGHEST, NALType::PPS, rbsp);
 
   output += nal_unit.get();
-
   file.write((char*)&output.buffer[0], output.buffer.size());
 }
 
@@ -221,8 +220,39 @@ void Writer::write_slice(const Bitstream& slice_data) {
   file.write((char*)&output.buffer[0], output.buffer.size());
 }
 
-Bitstream Writer::seq_parameter_set_rbsp() {
-  return Bitstream();
+Bitstream Writer::seq_parameter_set_rbsp(const int width, const int height, const int num_frames) {
+  Bitstream sodb;
+  // only support baseline profile
+  std::uint8_t profile_idc = 66;
+  bool constraint_set0_flag = false;
+  bool constraint_set1_flag = false;
+  bool constraint_set2_flag = false;
+  std::uint8_t reserved_zero_5bits = 0x00;
+  std::uint8_t level_idc = 10;
+  unsigned int seq_parameter_set_id = 0;
+  unsigned int log2_max_frame_num_minus4 = static_cast<unsigned int>(log2(num_frames) - 4);
+  unsigned int pic_order_cnt_type = 0;
+  unsigned int log2_max_pic_order_cnt_lsb_minus4 = 0;
+  unsigned int num_ref_frames = 0;
+  bool gaps_in_frame_num_value_allowed_flag = false;
+  unsigned int pic_width_in_mbs_minus_1 = (width % 16 == 0)? (width / 16) - 1 : width / 16;
+  unsigned int pic_height_in_mbs_minus_1 = (height % 16 == 0)? (height / 16) - 1 : height / 16;
+  bool frame_mbs_only_flag = true;
+  bool direct_8x8_inference_flag = false;
+  bool frame_cropping_flag = false;
+  bool vui_parameters_present_flag = false;
+
+  sodb = Bitstream(profile_idc, 8) + Bitstream(constraint_set0_flag) + 
+         Bitstream(constraint_set1_flag) + Bitstream(constraint_set2_flag) + 
+         Bitstream(reserved_zero_5bits, 5) + Bitstream(level_idc, 8) + 
+         ue(seq_parameter_set_id) + ue(log2_max_frame_num_minus4) + 
+         ue(pic_order_cnt_type) + ue(log2_max_pic_order_cnt_lsb_minus4) +
+         ue(num_ref_frames) + Bitstream(gaps_in_frame_num_value_allowed_flag) +
+         ue(pic_width_in_mbs_minus_1) + ue(pic_height_in_mbs_minus_1) + 
+         Bitstream(frame_mbs_only_flag) + Bitstream(direct_8x8_inference_flag) +
+         Bitstream(frame_cropping_flag) + Bitstream(vui_parameters_present_flag);
+
+  return sodb.rbsp_trailing_bits();
 }
 
 Bitstream Writer::pic_parameter_set_rbsp() {
