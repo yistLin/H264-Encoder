@@ -197,13 +197,11 @@ void Writer::write_sps(const int width, const int height, const int num_frames) 
   output += nal_unit.get();
 
   file.write((char*)&output.buffer[0], output.buffer.size());
-  file.close();
 }
 
 void Writer::write_pps() {
   Bitstream output(stopcode, 32);
   Bitstream rbsp = pic_parameter_set_rbsp();
-  
   NALUnit nal_unit(NALRefIdc::HIGHEST, NALType::PPS, rbsp);
 
   output += nal_unit.get();
@@ -223,24 +221,24 @@ void Writer::write_slice(const Bitstream& slice_data) {
 Bitstream Writer::seq_parameter_set_rbsp(const int width, const int height, const int num_frames) {
   Bitstream sodb;
   // only support baseline profile
-  std::uint8_t profile_idc = 66;
-  bool constraint_set0_flag = false;
-  bool constraint_set1_flag = false;
-  bool constraint_set2_flag = false;
-  std::uint8_t reserved_zero_5bits = 0x00;
-  std::uint8_t level_idc = 10;
-  unsigned int seq_parameter_set_id = 0;
-  unsigned int log2_max_frame_num_minus4 = static_cast<unsigned int>(log2(num_frames) - 4);
-  unsigned int pic_order_cnt_type = 0;
-  unsigned int log2_max_pic_order_cnt_lsb_minus4 = 0;
-  unsigned int num_ref_frames = 0;
-  bool gaps_in_frame_num_value_allowed_flag = false;
-  unsigned int pic_width_in_mbs_minus_1 = (width % 16 == 0)? (width / 16) - 1 : width / 16;
-  unsigned int pic_height_in_mbs_minus_1 = (height % 16 == 0)? (height / 16) - 1 : height / 16;
-  bool frame_mbs_only_flag = true;
-  bool direct_8x8_inference_flag = false;
-  bool frame_cropping_flag = false;
-  bool vui_parameters_present_flag = false;
+  std::uint8_t profile_idc = 66;  // u(8)
+  bool constraint_set0_flag = false;  // u(1)
+  bool constraint_set1_flag = false;  // u(1)
+  bool constraint_set2_flag = false;  // u(1)
+  std::uint8_t reserved_zero_5bits = 0x00;  // u(5)
+  std::uint8_t level_idc = 10;  // u(8)
+  unsigned int seq_parameter_set_id = 0;  // ue(v)
+  unsigned int log2_max_frame_num_minus4 = static_cast<unsigned int>(log2(num_frames) - 4); // ue(v)
+  unsigned int pic_order_cnt_type = 0;  // ue(v)
+  unsigned int log2_max_pic_order_cnt_lsb_minus4 = 0; // ue(v)
+  unsigned int num_ref_frames = 0;  // ue(v)
+  bool gaps_in_frame_num_value_allowed_flag = false;  // u(1)
+  unsigned int pic_width_in_mbs_minus_1 = (width % 16 == 0)? (width / 16) - 1 : width / 16; // ue(v)
+  unsigned int pic_height_in_mbs_minus_1 = (height % 16 == 0)? (height / 16) - 1 : height / 16; // ue(v)
+  bool frame_mbs_only_flag = true;  // u(1)
+  bool direct_8x8_inference_flag = false; // u(1)
+  bool frame_cropping_flag = false; // u(1)
+  bool vui_parameters_present_flag = false; // u(1)
 
   sodb = Bitstream(profile_idc, 8) + Bitstream(constraint_set0_flag) + 
          Bitstream(constraint_set1_flag) + Bitstream(constraint_set2_flag) + 
@@ -256,7 +254,34 @@ Bitstream Writer::seq_parameter_set_rbsp(const int width, const int height, cons
 }
 
 Bitstream Writer::pic_parameter_set_rbsp() {
-  return Bitstream();
+  Bitstream sodb;
+
+  unsigned int pic_parameter_set_id = 0;  // ue(v)
+  unsigned int seq_parameter_set_id = 0;  // ue(v)
+  bool entropy_coding_mode_flag = false;  // u(1)
+  bool pic_order_present_flag = false;  // u(1)
+  unsigned int num_slice_groups_minus1 = 0; // ue(v)
+  unsigned int num_ref_idx_l0_active_minus1 = 0;  // ue(v)
+  unsigned int num_ref_idx_l1_active_minus1 = 0;  // ue(v)
+  bool weighted_pred_flag = false;  // u(1)
+  unsigned int weighted_bipred_idc = 0; // u(2)
+  int pic_init_qp_minus26 = LUMA_QP - 26; // se(v)
+  int pic_init_qs_minus26 = 0;  // se(v)
+  int chroma_qp_index_offset = CHROMA_QP - LUMA_QP; // se(v)
+  bool deblocking_filter_control_present_flag = true; // u(1)
+  bool constrained_intra_pred_flag = false; // u(1)
+  bool redundant_pic_cnt_present_flag = false;  // u(1)
+
+  sodb = ue(pic_parameter_set_id) + ue(seq_parameter_set_id) +
+         Bitstream(entropy_coding_mode_flag) + Bitstream(pic_order_present_flag) +
+         ue(num_slice_groups_minus1) + ue(num_ref_idx_l0_active_minus1) +
+         ue(num_ref_idx_l1_active_minus1) + Bitstream(weighted_pred_flag) +
+         Bitstream(weighted_bipred_idc, 2) + se(pic_init_qp_minus26) +
+         se(pic_init_qs_minus26) + se(chroma_qp_index_offset) +
+         Bitstream(deblocking_filter_control_present_flag) + Bitstream(constrained_intra_pred_flag) +
+         Bitstream(redundant_pic_cnt_present_flag);
+
+  return sodb.rbsp_trailing_bits();
 }
 
 Bitstream Writer::slice_layer_without_partitioning_rbsp(const Bitstream& slice_data) {

@@ -16,6 +16,10 @@ void* operator new(std::size_t n) {
 
 void encode_sequence(Reader& reader, Writer& writer, Util& util) {
   int curr_frame = 0;
+
+  writer.write_sps(util.width, util.height, reader.nb_frames);
+  writer.write_pps();
+
   while (curr_frame < reader.nb_frames) {
     Frame frame(reader.get_padded_frame());
 

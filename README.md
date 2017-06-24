@@ -40,6 +40,11 @@ Reference:
 * [H.264 中整數DCT變換，量化，反量化，反DCT究竟是如何實現的？](http://blog.csdn.net/stpeace/article/details/8119041)
 * [Hadamard 變換中的歸一化問題](http://www.cnblogs.com/xkfz007/archive/2012/07/31/2616689.html)
 
+### CAVLC
+
+Reference:
+* [CAVLC Encoding Tutorial - The Wobbly Cucumber](http://wobblycucumber.blogspot.tw/2013/12/cavlc-encoding-tutorial.html)
+
 ### Book Reference
 
 * [Next-Generation Video Coding and Streaming](https://books.google.com.tw/books?id=Sa-RCwAAQBAJ&printsec=frontcover&hl=zh-TW#v=onepage&q&f=false)
