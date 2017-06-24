@@ -116,9 +116,9 @@ void Reader::convert_rgb_to_ycrcb(unsigned char* rgb_pixel, double& y, double& c
   b = (double)rgb_pixel[2];
 
   // Convert from RGB to YCrCb
-  y = 0.299 * r + 0.587 * g + 0.114 * b;
-  cb = -0.169 * r - 0.331 * g + 0.499 * b + 128;
-  cr = 0.499 * r - 0.418 * g - 0.0813 * b + 128;
+  y  = std::round( 0.257 * r + 0.504 * g + 0.098 * b + 16);
+  cb = std::round(-0.148 * r - 0.291 * g + 0.439 * b + 128);
+  cr = std::round( 0.439 * r - 0.368 * g - 0.071 * b + 128);
 }
 
 RawFrame Reader::read_one_frame() {
