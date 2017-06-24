@@ -243,8 +243,8 @@ void filter_Cr_Cb(int bs, int qPav, int& p3, int& p2, int& p1, int& p0, int& q0,
   int t_q0 = q0;
 
   if (bs == 4) {
-    t_p0 =(2 * p1 + p0 + q1 + 2) >> 2;
-    t_q0 = (2 * q1 + q0 + p1 + 2 ) >> 2;
+    t_p0 = (2 * p1 + p0 + q1 + 2) >> 2;
+    t_q0 = (2 * q1 + q0 + p1 + 2) >> 2;
   } else {
     int c = tc0[bs - 1][indexA];
     int tc = c + 1;
@@ -252,4 +252,7 @@ void filter_Cr_Cb(int bs, int qPav, int& p3, int& p2, int& p1, int& p0, int& q0,
     t_p0 = clip1(p0 + delta);
     t_q0 = clip1(q0 - delta);
   }
+
+  p0 = t_p0;
+  q0 = t_q0;
 }
