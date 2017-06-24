@@ -13,7 +13,7 @@ void* operator new(std::size_t n) {
     return malloc(n);
 }
 
-void encode_sequence(Reader& reader, Writer& Writer, Util& util) {
+void encode_sequence(Reader& reader, Writer& writer, Util& util) {
   int curr_frame = 0;
   while (curr_frame < reader.nb_frames) {
     Frame frame(reader.get_padded_frame());
