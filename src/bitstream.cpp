@@ -120,6 +120,16 @@ Bitstream Bitstream::operator+(const Bitstream& a) {
   return c;
 }
 
+Bitstream Bitstream::rbsp_trailing_bits() {
+  // rbsp_stop_one_bit
+  Bitstream rbsp = (*this) + Bitstream(static_cast<std::uint8_t>(1), 1);
+  int trail_bits = rbsp.nb_bits % 8;
+  // rbsp_trailing_bits
+  if (trail_bits != 0)
+    rbsp += Bitstream(static_cast<std::uint8_t>(0), (8-trail_bits));
+  return rbsp;
+}
+
 std::string Bitstream::to_string() {
   int nb_full_digit = nb_bits / 8;
   int trail_bits = nb_bits % 8;

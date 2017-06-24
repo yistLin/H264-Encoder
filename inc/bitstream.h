@@ -21,6 +21,8 @@ public:
   Bitstream operator+(const Bitstream&);
   Bitstream& operator+=(const Bitstream&);
 
+  Bitstream rbsp_trailing_bits();
+
   // for testing
   std::string to_string();
 };
