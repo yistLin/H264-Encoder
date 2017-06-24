@@ -104,10 +104,14 @@ void deblock_Cr_Cb_vertical(int cur_pos, MacroBlock& mb, std::vector<MacroBlock>
   if (index == -1)
     return;
 
-  Block4x4 blockQ = decoded_blocks.at(mb.mb_index).get_Y_4x4_block(cur_pos);
-  Block4x4 blockP = decoded_blocks.at(mb.mb_index).get_Y_4x4_block(temp_pos);
-  if (index != mb.mb_index)
-    blockP = decoded_blocks.at(index).get_Y_4x4_block(temp_pos);
+  Block4x4 blockQ_Cr = decoded_blocks.at(mb.mb_index).get_Cr_4x4_block(cur_pos);
+  Block4x4 blockP_Cr = decoded_blocks.at(mb.mb_index).get_Cr_4x4_block(temp_pos);
+  Block4x4 blockQ_Cb = decoded_blocks.at(mb.mb_index).get_Cb_4x4_block(cur_pos);
+  Block4x4 blockP_Cb = decoded_blocks.at(mb.mb_index).get_Cb_4x4_block(temp_pos);
+  if (index != mb.mb_index) {
+    blockP_Cr = decoded_blocks.at(index).get_Cr_4x4_block(temp_pos);
+    blockP_Cb = decoded_blocks.at(index).get_Cb_4x4_block(temp_pos);
+  }
 
   // is_intra
   int bs;
@@ -116,9 +120,11 @@ void deblock_Cr_Cb_vertical(int cur_pos, MacroBlock& mb, std::vector<MacroBlock>
   else
     bs = 3;
 
-  int qPav = (LUMA_QP + LUMA_QP) >> 1;
-  for (int i = 0; i != 4; i++)
-    filter_Cr_Cb(bs, qPav, blockP[i * 4], blockP[i * 4 + 1], blockP[i * 4 + 2], blockP[i * 4 + 3], blockQ[i * 4], blockQ[i * 4 + 1], blockQ[i * 4 + 2], blockQ[i * 4 + 3]);
+  int qPav = (CHROMA_QP + CHROMA_QP) >> 1;
+  for (int i = 0; i != 4; i++) {
+    filter_Cr_Cb(bs, qPav, blockP_Cr[i * 4], blockP_Cr[i * 4 + 1], blockP_Cr[i * 4 + 2], blockP_Cr[i * 4 + 3], blockQ_Cr[i * 4], blockQ_Cr[i * 4 + 1], blockQ_Cr[i * 4 + 2], blockQ_Cr[i * 4 + 3]);
+    filter_Cr_Cb(bs, qPav, blockP_Cb[i * 4], blockP_Cb[i * 4 + 1], blockP_Cb[i * 4 + 2], blockP_Cb[i * 4 + 3], blockQ_Cb[i * 4], blockQ_Cb[i * 4 + 1], blockQ_Cb[i * 4 + 2], blockQ_Cb[i * 4 + 3]);
+  }
 }
 
 void deblock_Cr_Cb_horizontal(int cur_pos, MacroBlock& mb, std::vector<MacroBlock>& decoded_blocks, Frame& frame) {
@@ -137,10 +143,14 @@ void deblock_Cr_Cb_horizontal(int cur_pos, MacroBlock& mb, std::vector<MacroBloc
   if (index == -1)
     return;
 
-  Block4x4 blockQ = decoded_blocks.at(mb.mb_index).get_Y_4x4_block(cur_pos);
-  Block4x4 blockP = decoded_blocks.at(mb.mb_index).get_Y_4x4_block(temp_pos);
-  if (index != mb.mb_index)
-    blockP = decoded_blocks.at(index).get_Y_4x4_block(temp_pos);
+  Block4x4 blockQ_Cr = decoded_blocks.at(mb.mb_index).get_Cr_4x4_block(cur_pos);
+  Block4x4 blockP_Cr = decoded_blocks.at(mb.mb_index).get_Cr_4x4_block(temp_pos);
+  Block4x4 blockQ_Cb = decoded_blocks.at(mb.mb_index).get_Cb_4x4_block(cur_pos);
+  Block4x4 blockP_Cb = decoded_blocks.at(mb.mb_index).get_Cb_4x4_block(temp_pos);
+  if (index != mb.mb_index) {
+    blockP_Cr = decoded_blocks.at(index).get_Cr_4x4_block(temp_pos);
+    blockP_Cb = decoded_blocks.at(index).get_Cb_4x4_block(temp_pos);
+  }
 
   // is_intra
   int bs;
@@ -149,9 +159,11 @@ void deblock_Cr_Cb_horizontal(int cur_pos, MacroBlock& mb, std::vector<MacroBloc
   else
     bs = 3;
 
-  int qPav = (LUMA_QP + LUMA_QP) >> 1;
-  for (int i = 0; i != 4; i++)
-    filter_Cr_Cb(bs, qPav, blockP[i * 4], blockP[i * 4 + 1], blockP[i * 4 + 2], blockP[i * 4 + 3], blockQ[i * 4], blockQ[i * 4 + 1], blockQ[i * 4 + 2], blockQ[i * 4 + 3]);
+  int qPav = (CHROMA_QP + CHROMA_QP) >> 1;
+  for (int i = 0; i != 4; i++) {
+    filter_Cr_Cb(bs, qPav, blockP_Cr[i * 4], blockP_Cr[i * 4 + 1], blockP_Cr[i * 4 + 2], blockP_Cr[i * 4 + 3], blockQ_Cr[i * 4], blockQ_Cr[i * 4 + 1], blockQ_Cr[i * 4 + 2], blockQ_Cr[i * 4 + 3]);
+    filter_Cr_Cb(bs, qPav, blockP_Cb[i * 4], blockP_Cb[i * 4 + 1], blockP_Cb[i * 4 + 2], blockP_Cb[i * 4 + 3], blockQ_Cb[i * 4], blockQ_Cb[i * 4 + 1], blockQ_Cb[i * 4 + 2], blockQ_Cb[i * 4 + 3]);
+  }
 }
 
 int clip1(int value) {

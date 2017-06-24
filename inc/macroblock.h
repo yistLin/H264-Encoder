@@ -28,6 +28,8 @@ public:
   MacroBlock(const int r, const int c): mb_row(r), mb_col(c) {}
 
   Block4x4 get_Y_4x4_block(int pos);
+  Block4x4 get_Cr_4x4_block(int pos);
+  Block4x4 get_Cb_4x4_block(int pos);
 
   Block4x4 get_Y_DC_block();
   Block4x4 get_Y_AC_block(int pos);
