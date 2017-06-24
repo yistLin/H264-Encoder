@@ -5,6 +5,7 @@
 #include "io.h"
 #include "frame.h"
 #include "frame_encode.h"
+#include "frame_vlc.h"
 
 Log logger("Main");
 
@@ -26,6 +27,7 @@ void encode_sequence(Reader& reader, Writer& writer, Util& util) {
       }
     } else {
       encode_I_frame(frame);
+      vlc_frame(frame, writer);
     }
 
     curr_frame++;
