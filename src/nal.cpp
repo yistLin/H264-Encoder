@@ -1,13 +1,13 @@
 #include "nal.h"
 
 /* Construct NAL unit 
- * given ref, type and string of data bits (SODB)
+ * given ref, type and RBSP
  */
-NALUnit::NALUnit(const NALRefIdc ref_idc, const NALType type, const Bitstream& sodb) {
+NALUnit::NALUnit(const NALRefIdc ref_idc, const NALType type, const Bitstream& rbsp) {
   forbidden_zero_bit = 0;
   nal_ref_idc = ref_idc;
   nal_unit_type = type;
-  buffer = sodb;
+  buffer = rbsp;
 }
 
 /* Return NAL header 
