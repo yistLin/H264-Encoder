@@ -33,7 +33,6 @@ public:
 
   Block4x4 get_Y_DC_block();
   Block4x4 get_Y_AC_block(int pos);
-  Block4x4 get_Y_block4x4(int pos);
 
   Block2x2 get_Cr_DC_block();
   Block4x4 get_Cr_AC_block(int pos);

@@ -55,10 +55,6 @@ Block4x4 MacroBlock::get_Y_AC_block(int pos) {
   return block;
 }
 
-Block4x4 MacroBlock::get_Y_block4x4(int pos) {
-  return get_Y_4x4_block(pos);
-}
-
 Block2x2 MacroBlock::get_Cr_DC_block() {
   Block2x2 block(Cr[0], Cr[4], Cr[32], Cr[36]);
   return block;
