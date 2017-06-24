@@ -2,12 +2,14 @@
 #define IO
 
 #include <fstream>
+#include <cstdint>
 #include <vector>
 #include <cmath>
 
 #include "log.h"
 #include "vlc.h"
 #include "nal.h"
+#include "bitstream.h"
 
 class RawFrame {
 public:
@@ -60,13 +62,16 @@ public:
 
   void write_sps();
   void write_pps();
+  void write_slice(const Bitstream&);
 
 private:
   Log logger;
   std::fstream file;
+  static std::uint8_t stopcode[4];
 
-  void seq_parameter_set_rbsp();
-  void pic_parameter_set_rbsp();
+  Bitstream seq_parameter_set_rbsp();
+  Bitstream pic_parameter_set_rbsp();
+  Bitstream slice_layer_without_partitioning_rbsp(const Bitstream&);
 };
 
 #endif // IO

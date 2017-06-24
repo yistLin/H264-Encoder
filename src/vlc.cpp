@@ -182,7 +182,7 @@ std::string run_vlc_table[15][8] = {
 
 /* Unsigned Exponential Golomb coding
  */
-Bitstream exp_golomb(const int codenum) {
+Bitstream ue(const unsigned int codenum) {
   int x, leading_zeros, nb_bits;
   x = codenum + 1;
   leading_zeros = static_cast<int> (log2(x));
@@ -195,9 +195,9 @@ Bitstream exp_golomb(const int codenum) {
 
 /* Signed Exponential Golomb coding
  */
-Bitstream signed_exp_golomb(const int codenum) {
-  int _codenum = (codenum > 0) ? 2*codenum-1 : 2*(-codenum);
-  return exp_golomb(_codenum);
+Bitstream se(const int codenum) {
+  unsigned int _codenum = (codenum > 0) ? 2*codenum-1 : 2*(-codenum);
+  return ue(_codenum);
 }
 
 void scan_zigzag(Block4x4 block, int tblock[]) {

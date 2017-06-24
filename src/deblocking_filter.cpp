@@ -21,6 +21,7 @@ void deblock_Y_vertical(int cur_pos, MacroBlock& mb, std::vector<MacroBlock>& de
   int real_pos = MacroBlock::convert_table[cur_pos];
   bool is_boundary = false;
 
+  // get the left 4x4 block index
   int index, temp_pos;
   if (real_pos % 4 == 0) {
     is_boundary = true;
@@ -35,7 +36,6 @@ void deblock_Y_vertical(int cur_pos, MacroBlock& mb, std::vector<MacroBlock>& de
   if (index == -1)
     return;
 
-  std::cerr << "Q: " << cur_pos << " P: " << temp_pos << std::endl;
   Block4x4 blockQ = decoded_blocks.at(mb.mb_index).get_Y_4x4_block(cur_pos);
   Block4x4 blockP = decoded_blocks.at(mb.mb_index).get_Y_4x4_block(temp_pos);
   if (index != mb.mb_index)
@@ -57,6 +57,7 @@ void deblock_Y_horizontal(int cur_pos, MacroBlock& mb, std::vector<MacroBlock>& 
   int real_pos = MacroBlock::convert_table[cur_pos];
   bool is_boundary = false;
 
+  // get the up 4x4 block index
   int index, temp_pos;
   if (0 <= real_pos && real_pos <= 3) {
     is_boundary = true;
@@ -91,6 +92,7 @@ void deblock_Y_horizontal(int cur_pos, MacroBlock& mb, std::vector<MacroBlock>& 
 void deblock_Cr_Cb_vertical(int cur_pos, MacroBlock& mb, std::vector<MacroBlock>& decoded_blocks, Frame& frame) {
   bool is_boundary = false;
 
+  // get the left 4x4 block index
   int index, temp_pos;
   if (cur_pos % 2 == 0) {
     is_boundary = true;
@@ -130,6 +132,7 @@ void deblock_Cr_Cb_vertical(int cur_pos, MacroBlock& mb, std::vector<MacroBlock>
 void deblock_Cr_Cb_horizontal(int cur_pos, MacroBlock& mb, std::vector<MacroBlock>& decoded_blocks, Frame& frame) {
   bool is_boundary = false;
 
+  // get the up 4x4 block index
   int index, temp_pos;
   if (0 <= cur_pos && cur_pos <= 1) {
     is_boundary = true;

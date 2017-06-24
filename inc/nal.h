@@ -41,6 +41,7 @@ public:
 
   NALUnit(const NALRefIdc, const NALType, const Bitstream&);
   std::uint8_t nal_header();
+  Bitstream get();
 
 private:
   int forbidden_zero_bit; // Always be zero
