@@ -155,6 +155,17 @@ std::string zero_vlc_table[16][17] = {
   { "", "000000001", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "" }
 };
 
+/* Zero-TotalCoeff table for Chroma DC 2x2
+ *
+ *   zero_vlc_table2x2[ TotalZeros ][ TotalCoeff ]
+ */
+std::string zero_vlc_table2x2[4][4] = {
+  { "", "1", "1", "1" },
+  { "", "01", "01", "0" },
+  { "", "001", "00", "" },
+  { "", "000", "", "" }
+};
+
 /* Run-Length table
  *
  * used to encoding run-length of zeros
@@ -550,7 +561,7 @@ std::pair<Bitstream, int> cavlc_block2x2(Block2x2 block, const int nC) {
       break;
   }
 
-  std::string final_str = num_vlc_table[coeff_table_idx][total_coeff][trail_ones] + ones_str + level_vlc_str + zero_vlc_table[total_zeros][total_coeff] + run_vlc_str;
+  std::string final_str = num_vlc_table[coeff_table_idx][total_coeff][trail_ones] + ones_str + level_vlc_str + zero_vlc_table2x2[total_zeros][total_coeff] + run_vlc_str;
   return std::make_pair(Bitstream(final_str), total_coeff);
 }
 
