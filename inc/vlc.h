@@ -8,7 +8,7 @@
 
 #include "bitstream.h"
 
-Bitstream ne(const unsigned int);
+Bitstream ue(const unsigned int);
 Bitstream se(const int);
 
 #endif

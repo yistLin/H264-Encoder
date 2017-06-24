@@ -2,7 +2,7 @@
 
 /* Unsigned Exponential Golomb coding
  */
-Bitstream ne(const unsigned int codenum) {
+Bitstream ue(const unsigned int codenum) {
   int x, leading_zeros, nb_bits;
   x = codenum + 1;
   leading_zeros = static_cast<int> (log2(x));
@@ -17,5 +17,5 @@ Bitstream ne(const unsigned int codenum) {
  */
 Bitstream se(const int codenum) {
   unsigned int _codenum = (codenum > 0) ? 2*codenum-1 : 2*(-codenum);
-  return ne(_codenum);
+  return ue(_codenum);
 }
