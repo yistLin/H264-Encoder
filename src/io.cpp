@@ -177,3 +177,13 @@ PadFrame Reader::get_padded_frame() {
 
   return pf;
 }
+
+
+Writer::Writer(std::string filename) {
+  // Open the file stream for output file
+  file.open(filename, std::ios::out | std::ios::binary);
+  if (!file.is_open()) {
+    logger.log(Level::ERROR, "Cannot open file");
+    exit(1);
+  }
+}
