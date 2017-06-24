@@ -7,14 +7,27 @@ void encode_I_frame(Frame& frame) {
   std::vector<MacroBlock> decoded_blocks;
   decoded_blocks.reserve(frame.mbs.size());
 
+  int mb_no = 0;
   for (auto& mb : frame.mbs) {
+    f_logger.log(Level::DEBUG, "mb no: " + std::to_string(mb_no++));
     decoded_blocks.push_back(mb);
-    encode_Y_block(mb, decoded_blocks, frame);
-    encode_Cr_Cb_block(mb, decoded_blocks, frame);
+    MacroBlock origin_block = mb;
+
+    int error_luma = encode_Y_block(mb, decoded_blocks, frame);
+    int error_chroma = encode_Cr_Cb_block(mb, decoded_blocks, frame);
+
+    if (error_luma > 2000 || error_chroma > 1000) {
+      f_logger.log(Level::VERBOSE, "error exceeded: luma " + std::to_string(error_luma) + " chroma: " + std::to_string(error_chroma));
+      mb = origin_block;
+      decoded_blocks.back() = origin_block;
+    }
   }
+
+  // in-loop deblocking filter
+  deblocking_filter(decoded_blocks, frame);
 }
 
-void encode_Y_block(MacroBlock& mb, std::vector<MacroBlock>& decoded_blocks, Frame& frame) {
+int encode_Y_block(MacroBlock& mb, std::vector<MacroBlock>& decoded_blocks, Frame& frame) {
   // temp marcoblock for choosing two predicitons
   MacroBlock temp_block = mb;
   MacroBlock temp_decoded_block = mb;
@@ -35,8 +48,12 @@ void encode_Y_block(MacroBlock& mb, std::vector<MacroBlock>& decoded_blocks, Fra
     for (auto& m : mb.intra4x4_Y_mode)
       mode += " " + std::to_string(static_cast<int>(m));
     f_logger.log(Level::DEBUG, "luma intra4x4\terror: " + std::to_string(error_intra4x4) + mode);
+
+    return error_intra4x4;
   } else {
     f_logger.log(Level::DEBUG, "luma intra16x16\terror: " + std::to_string(error_intra16x16) + "\tmode: " + std::to_string(static_cast<int>(mb.intra16x16_Y_mode)));
+
+    return error_intra16x16;
   }
 }
 
@@ -183,9 +200,11 @@ int encode_Y_intra4x4_block(int cur_pos, MacroBlock& mb, MacroBlock& decoded_blo
   return error;
 }
 
-void encode_Cr_Cb_block(MacroBlock& mb, std::vector<MacroBlock>& decoded_blocks, Frame& frame) {
+int encode_Cr_Cb_block(MacroBlock& mb, std::vector<MacroBlock>& decoded_blocks, Frame& frame) {
   int error_intra8x8 = encode_Cr_Cb_intra8x8_block(mb, decoded_blocks, frame);
   f_logger.log(Level::DEBUG, "chroma intra8x8\terror: " + std::to_string(error_intra8x8) + "\tmode: " + std::to_string(static_cast<int>(mb.intra_Cr_Cb_mode)));
+
+  return error_intra8x8;
 }
 
 int encode_Cr_Cb_intra8x8_block(MacroBlock& mb, std::vector<MacroBlock>& decoded_blocks, Frame& frame) {
