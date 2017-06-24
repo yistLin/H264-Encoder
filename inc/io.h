@@ -10,32 +10,8 @@
 #include "vlc.h"
 #include "nal.h"
 #include "qdct.h"
+#include "frame.h"
 #include "bitstream.h"
-
-class RawFrame {
-public:
-  int width;
-  int height;
-  std::vector<int> Y;
-  std::vector<int> Cb;
-  std::vector<int> Cr;
-
-  RawFrame(const int, const int);
-};
-
-class PadFrame {
-public:
-  int width;
-  int height;
-  int raw_width;
-  int raw_height;
-  std::vector<int> Y;
-  std::vector<int> Cb;
-  std::vector<int> Cr;
-
-  PadFrame(const int, const int);
-  PadFrame(const RawFrame&);
-};
 
 class Reader {
 private:
