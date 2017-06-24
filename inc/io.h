@@ -9,6 +9,7 @@
 #include "log.h"
 #include "vlc.h"
 #include "nal.h"
+#include "qdct.h"
 #include "bitstream.h"
 
 class RawFrame {
