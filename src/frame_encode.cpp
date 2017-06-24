@@ -9,7 +9,7 @@ void encode_I_frame(Frame& frame) {
 
   int mb_no = 0;
   for (auto& mb : frame.mbs) {
-    f_logger.log(Level::DEBUG, "mb no: " + std::to_string(mb_no++));
+    f_logger.log(Level::DEBUG, "mb #" + std::to_string(mb_no++));
     decoded_blocks.push_back(mb);
     MacroBlock origin_block = mb;
 
