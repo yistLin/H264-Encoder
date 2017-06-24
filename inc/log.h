@@ -5,10 +5,11 @@
 #include <string>
 #include <experimental/string_view>
 
-enum class Level { ERROR, VERBOSE, DEBUG };
+enum class Level { NORMAL, ERROR, VERBOSE, DEBUG };
 
 class Log {
 public:
+  static bool log_normal;
   static bool log_error;
   static bool log_verbose;
   static bool log_debug;
