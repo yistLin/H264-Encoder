@@ -6,6 +6,8 @@
 #include <cmath>
 
 #include "log.h"
+#include "vlc.h"
+#include "nal.h"
 
 class RawFrame {
 public:
@@ -50,6 +52,21 @@ public:
   Reader(std::string, const int, const int);
   RawFrame read_one_frame();
   PadFrame get_padded_frame();
+};
+
+class Writer {
+public:
+  Writer(std::string);
+
+  void write_sps();
+  void write_pps();
+
+private:
+  Log logger;
+  std::fstream file;
+
+  void seq_parameter_set_rbsp();
+  void pic_parameter_set_rbsp();
 };
 
 #endif // IO
