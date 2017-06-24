@@ -6,6 +6,7 @@
 
 #include "block.h"
 #include "intra.h"
+#include "bitstream.h"
 
 #define BLOCKS_PER_MB 4+1+1
 
@@ -24,6 +25,12 @@ public:
   IntraChromaMode intra_Cr_Cb_mode;
 
   bool is_I_PCM = false;
+
+  bool coded_block_pattern_luma = false;
+  bool coded_block_pattern_chroma_DC = false;
+  bool coded_block_pattern_chroma_AC = false;
+
+  Bitstream bitstream;
 
   static const std::array<int, 16> convert_table;
 
