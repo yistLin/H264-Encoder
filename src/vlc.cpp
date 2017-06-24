@@ -1,7 +1,5 @@
 #include "vlc.h"
 
-#include <iostream>
-
 /* Zig-zag scan
  */
 const int mat_zigzag4x4[16] = {
@@ -205,17 +203,15 @@ void scan_zigzag(Block4x4 block, int tblock[]) {
     tblock[mat_zigzag4x4[i]] = block[i];
 }
 
+void scan_zigzag(Block2x2 block, int tblock[]) {
+  tblock[0] = block[0];
+  tblock[1] = block[1];
+  tblock[2] = block[2];
+  tblock[3] = block[3];
+}
+
 std::pair<Bitstream, int> cavlc_block4x4(Block4x4 block, const int nC) {
   int mat_x[16];
-
-  // for (int i = 0; i < 16; i++) {
-  //   if (i % 4 == 0)
-  //     printf("\n");
-  //   printf("%3d", block[i]);
-  // }
-  // printf("\n");
-
-  // Re-order 4x4 block
   scan_zigzag(block, mat_x);
 
   int total_coeff = 0;
@@ -382,28 +378,179 @@ std::pair<Bitstream, int> cavlc_block4x4(Block4x4 block, const int nC) {
       break;
   }
 
-  // printf("\n");
-  // for (int i = 0; i <= highest_idx; i++) {
-  //   printf("%d ", mat_x[i]);
-  // }
-  // printf("\n");
-  // printf("coeff_token = %s\n", num_vlc_table[nC][total_coeff][trail_ones].c_str());
-  // printf("ones_str    = %s\n", ones_str.c_str());
-  // printf("level_str   = %s\n", level_vlc_str.c_str());
-  // printf("zero_enc    = %s\n", zero_vlc_table[total_zeros][total_coeff].c_str());
-  // printf("run_vlc_str = %s\n", run_vlc_str.c_str());
-  // printf("\n");
-  // printf("total_coeff = %d\n", total_coeff);
-  // printf("total_zeros = %d\n", total_zeros);
-  // printf("trail_ones  = %d\n", trail_ones);
-  // printf("highest_idx = %d\n", highest_idx);
-  // printf("resume_idx  = %d\n", resume_idx);
-
   std::string final_str = num_vlc_table[coeff_table_idx][total_coeff][trail_ones] + ones_str + level_vlc_str + zero_vlc_table[total_zeros][total_coeff] + run_vlc_str;
   return std::make_pair(Bitstream(final_str), total_coeff);
 }
 
 std::pair<Bitstream, int> cavlc_block2x2(Block2x2 block, const int nC) {
-  return std::make_pair(Bitstream(), 0);
+  int mat_x[4];
+  scan_zigzag(block, mat_x);
+
+  int total_coeff = 0;
+  int total_zeros = 0;
+  int trail_ones = 0;
+  int highest_idx = 0;
+
+  int coeff_table_idx = 5;
+  if (nC >= 0 && nC < 2)
+    coeff_table_idx = 0;
+  else if (nC >= 2 && nC < 4)
+    coeff_table_idx = 1;
+  else if (nC >= 4 && nC < 8)
+    coeff_table_idx = 2;
+  else if (nC >= 8)
+    coeff_table_idx = 3;
+  else if (nC == -1)
+    coeff_table_idx = 4;
+
+  // Get the highest frequency coeff
+  for (int i = 3; i >= 0; i--) {
+    if (mat_x[i] != 0) {
+      highest_idx = i;
+      break;
+    }
+  }
+
+  // Count TotalCoeff, TotalZeros
+  for (int i = 0; i <= highest_idx; i++) {
+    if (mat_x[i] != 0)
+      total_coeff++;
+  }
+  total_zeros = highest_idx - total_coeff + 1;
+
+  // Count trailing ones
+  std::string ones_str;
+  int resume_idx = highest_idx;
+  for (int i = highest_idx; i >= 0; i--) {
+    if (mat_x[i] != 0) {
+      if (mat_x[i] == 1) {
+        trail_ones++;
+        ones_str += "0";
+      }
+      else if (mat_x[i] == -1) {
+        trail_ones++;
+        ones_str += "1";
+      }
+      else {
+        resume_idx = i;
+        break;
+      }
+
+      if (trail_ones == 3) {
+        resume_idx = i - 1;
+        break;
+      }
+    }
+  }
+ 
+  // Level encoding
+  std::string level_vlc_str = "";
+  int lastCoeff = total_coeff - trail_ones;
+  if (lastCoeff > 0) {
+    int suffix_len = 0;
+    bool pad_this = (trail_ones < 3);
+
+    for (int i = resume_idx; i >= 0; i--) {
+      if (mat_x[i] != 0) {
+        lastCoeff--;
+        int level_code = mat_x[i];
+
+        if (pad_this) {
+          if (mat_x[i] > 0)
+            level_code -= 1;
+          else
+            level_code += 1;
+          pad_this = false;
+        }
+
+        level_code *= 2;
+        if (level_code >= 0)
+          level_code -= 2;
+        else
+          level_code = 0 - (level_code + 1);
+
+        int level_prefix = 0;
+        std::string level_prefix_str = "";
+        bool solution_found = false;
+
+        while (!solution_found) {
+          int level_suffix_len = 0;
+          if (level_prefix == 14 && suffix_len == 0)
+            level_suffix_len = 4;
+          else {
+            if (level_prefix >= 15)
+              level_suffix_len = level_prefix - 3;
+            else
+              level_suffix_len = suffix_len;
+          }
+
+          if (level_prefix >= 16)
+            level_code -= (1 << (level_prefix - 3)) - 4096;
+
+          if (level_prefix >= 15 && suffix_len == 0)
+            level_code -= 15;
+
+          int level_code_prefix = std::min(15, level_prefix) * pow(2.0, suffix_len);
+          int level_suffix = level_code - level_code_prefix;
+          int level_max = pow(2.0, level_suffix_len) - 1;
+
+          if (level_suffix <= level_max) {
+            solution_found = true;
+            level_vlc_str += level_prefix_str + "1";
+            if (level_suffix_len != 0) {
+              std::string encoded_str;
+              if (level_suffix != 0) {
+                std::bitset<64> bits(level_suffix);
+                encoded_str = bits.to_string();
+                int first_one_pos = encoded_str.find_first_of("1");
+                encoded_str = encoded_str.substr(first_one_pos, 64 - first_one_pos);
+              }
+              else
+                encoded_str = "0";
+              while (encoded_str.length() < (unsigned int)level_suffix_len)
+                encoded_str = "0" + encoded_str;
+              level_vlc_str += encoded_str;
+            }
+
+            if (std::abs(mat_x[i]) > (3 << (suffix_len - 1)) && suffix_len < 6)
+              suffix_len++;
+          }
+          else {
+            level_prefix++;
+            level_prefix_str += "0";
+          }
+        }
+      }
+    }
+  }
+
+  // Calculate run-before
+  std::string run_vlc_str = "";
+  int last_zeros = total_zeros;
+  int coeff_cnt = total_coeff - 1;
+  for (int i = 3; i >= 0; i--) {
+    if (mat_x[i] != 0) {
+      int zero_cnt = 0;
+      int j = i - 1;
+      for (; j >= 0; j--) {
+        if (mat_x[j] != 0)
+          break;
+        zero_cnt++;
+      }
+
+      if (j != -1) {
+        std::string run_str = run_vlc_table[zero_cnt][last_zeros];
+        last_zeros -= zero_cnt;
+        coeff_cnt--;
+        run_vlc_str += run_str;
+      }
+    }
+
+    if (last_zeros == 0)
+      break;
+  }
+
+  std::string final_str = num_vlc_table[coeff_table_idx][total_coeff][trail_ones] + ones_str + level_vlc_str + zero_vlc_table[total_zeros][total_coeff] + run_vlc_str;
+  return std::make_pair(Bitstream(final_str), total_coeff);
 }
 
