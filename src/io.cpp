@@ -317,12 +317,15 @@ Bitstream Writer::slice_header(const int _frame_num) {
   unsigned int frame_num = _frame_num;  // u(v)
   unsigned int idr_pic_id = _frame_num; // ue(v)
   unsigned int pic_order_cnt_lsb = _frame_num;  // u(v)
+  bool no_output_of_prior_pics_flag = false; // u(1)
+  bool long_term_reference_flag = false; // u(1)
   int slice_qp_delta = 0;  // se(v)
   unsigned int disable_deblocking_filter_idc = 1; // ue(v)
 
   sodb = ue(first_mb_in_slice) + ue(slice_type) +
          ue(pic_parameter_set_id) + Bitstream(frame_num, log2_max_frame_num) +
          ue(idr_pic_id) + Bitstream(pic_order_cnt_lsb, log2_max_pic_order_cnt_lsb) +
+         Bitstream(no_output_of_prior_pics_flag) + Bitstream(long_term_reference_flag) +
          se(slice_qp_delta) + ue(disable_deblocking_filter_idc);
 
   return sodb;
