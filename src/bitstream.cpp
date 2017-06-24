@@ -45,6 +45,19 @@ Bitstream::Bitstream(const std::uint8_t u, int digit) {
   buffer.push_back(u << (8-digit));
 }
 
+Bitstream::Bitstream(const unsigned int cui, int digit) {
+  nb_bits = digit;
+  unsigned int ui = cui << (32 - digit);
+  if (digit >= 0)
+    buffer.push_back((std::uint8_t)(ui >> 24));
+  if (digit >= 8)
+    buffer.push_back((std::uint8_t)(ui >> 16));
+  if (digit >= 16)
+    buffer.push_back((std::uint8_t)(ui >> 8));
+  if (digit >= 24)
+    buffer.push_back((std::uint8_t)(ui));
+}
+
 Bitstream& Bitstream::operator+=(const Bitstream& a) {
   int trail_bits = this->nb_bits % 8;
 
