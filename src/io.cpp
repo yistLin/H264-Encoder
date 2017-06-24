@@ -178,7 +178,6 @@ PadFrame Reader::get_padded_frame() {
   return pf;
 }
 
-
 Writer::Writer(std::string filename) {
   // Open the file stream for output file
   file.open(filename, std::ios::out | std::ios::binary);
@@ -186,4 +185,50 @@ Writer::Writer(std::string filename) {
     logger.log(Level::ERROR, "Cannot open file");
     exit(1);
   }
+}
+
+std::uint8_t Writer::stopcode[4] = {0x00, 0x00, 0x00, 0x01};
+
+void Writer::write_sps() {
+  Bitstream output(stopcode, 32);
+  Bitstream rbsp = seq_parameter_set_rbsp();
+  
+  NALUnit nal_unit(NALRefIdc::HIGHEST, NALType::SPS, rbsp);
+
+  output += nal_unit.get();
+
+  file.write((char*)&output.buffer[0], output.buffer.size());
+}
+
+void Writer::write_pps() {
+  Bitstream output(stopcode, 32);
+  Bitstream rbsp = pic_parameter_set_rbsp();
+  
+  NALUnit nal_unit(NALRefIdc::HIGHEST, NALType::PPS, rbsp);
+
+  output += nal_unit.get();
+
+  file.write((char*)&output.buffer[0], output.buffer.size());
+}
+
+void Writer::write_slice(const Bitstream& slice_data) {
+  Bitstream output(stopcode, 32);
+  Bitstream rbsp = slice_layer_without_partitioning_rbsp(slice_data);
+
+  NALUnit nal_unit(NALRefIdc::HIGHEST, NALType::IDR, rbsp);
+
+  output += nal_unit.get();
+  file.write((char*)&output.buffer[0], output.buffer.size());
+}
+
+Bitstream Writer::seq_parameter_set_rbsp() {
+  return Bitstream();
+}
+
+Bitstream Writer::pic_parameter_set_rbsp() {
+  return Bitstream();
+}
+
+Bitstream Writer::slice_layer_without_partitioning_rbsp(const Bitstream& slice_data) {
+  return Bitstream() + slice_data;
 }
