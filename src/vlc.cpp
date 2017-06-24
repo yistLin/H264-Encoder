@@ -223,6 +223,18 @@ std::pair<Bitstream, int> cavlc_block4x4(Block4x4 block, const int nC) {
   int trail_ones = 0;
   int highest_idx = 0;
 
+  int coeff_table_idx = 5;
+  if (nC >= 0 && nC < 2)
+    coeff_table_idx = 0;
+  else if (nC >= 2 && nC < 4)
+    coeff_table_idx = 1;
+  else if (nC >= 4 && nC < 8)
+    coeff_table_idx = 2;
+  else if (nC >= 8)
+    coeff_table_idx = 3;
+  else if (nC == -1)
+    coeff_table_idx = 4;
+
   // Get the highest frequency coeff
   for (int i = 15; i >= 0; i--) {
     if (mat_x[i] != 0) {
@@ -387,8 +399,7 @@ std::pair<Bitstream, int> cavlc_block4x4(Block4x4 block, const int nC) {
   // printf("highest_idx = %d\n", highest_idx);
   // printf("resume_idx  = %d\n", resume_idx);
 
-  std::string final_str = num_vlc_table[nC][total_coeff][trail_ones] + ones_str + level_vlc_str + zero_vlc_table[total_zeros][total_coeff] + run_vlc_str;
-  printf("final_str = %s\n", final_str.c_str());
+  std::string final_str = num_vlc_table[coeff_table_idx][total_coeff][trail_ones] + ones_str + level_vlc_str + zero_vlc_table[total_zeros][total_coeff] + run_vlc_str;
   return std::make_pair(Bitstream(final_str), total_coeff);
 }
 
