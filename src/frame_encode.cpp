@@ -20,6 +20,7 @@ void encode_I_frame(Frame& frame) {
       f_logger.log(Level::VERBOSE, "error exceeded: luma " + std::to_string(error_luma) + " chroma: " + std::to_string(error_chroma));
       mb = origin_block;
       decoded_blocks.back() = origin_block;
+      mb.is_I_PCM = true;
     }
   }
 

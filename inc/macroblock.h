@@ -23,6 +23,8 @@ public:
   std::array<Intra4x4Mode, 16> intra4x4_Y_mode;
   IntraChromaMode intra_Cr_Cb_mode;
 
+  bool is_I_PCM = false;
+
   static const std::array<int, 16> convert_table;
 
   MacroBlock(const int r, const int c): mb_row(r), mb_col(c) {}

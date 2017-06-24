@@ -23,6 +23,7 @@ void encode_sequence(Reader& reader, Writer& writer, Util& util) {
     if (util.test_frame != -1) {
       if (curr_frame == util.test_frame) {
         encode_I_frame(frame);
+        vlc_frame(frame, writer);
         break;
       }
     } else {

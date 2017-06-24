@@ -8,15 +8,26 @@ void vlc_frame(Frame& frame, Writer& writer) {
   std::vector<std::array<int, 4>> nc_Cr_table;
   nc_Cr_table.reserve(frame.mbs.size());
 
-  // // int mb_no = 0;
+  // int mb_no = 0;
   for (auto& mb : frame.mbs) {
-  //   // f_logger.log(Level::DEBUG, "mb #" + std::to_string(mb_no++));
+    // f_logger.log(Level::DEBUG, "mb #" + std::to_string(mb_no++));
     std::array<int, 17> current_Y_table;
     std::array<int, 4> current_Cb_table;
     std::array<int, 4> current_Cr_table;
     nc_Y_table.push_back(current_Y_table);
     nc_Cb_table.push_back(current_Cb_table);
     nc_Cr_table.push_back(current_Cr_table);
+
+    if (mb.is_I_PCM) {
+      for (int i = 0; i != 17; i++)
+        nc_Y_table.at(mb.mb_index)[i] = 16;
+      for (int i = 0; i != 4; i++) {
+        nc_Cb_table.at(mb.mb_index)[i] = 16;
+        nc_Cr_table.at(mb.mb_index)[i] = 16;
+      }
+
+      continue;
+    }
 
     if (mb.is_intra16x16)
       vlc_Y_DC(mb, nc_Y_table, frame);
