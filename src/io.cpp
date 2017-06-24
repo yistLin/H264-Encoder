@@ -235,6 +235,27 @@ Bitstream Writer::write_slice_data(Frame& frame) {
     if (mb.is_I_PCM) {
       sodb += ue(25);
 
+      while(!sodb.byte_align())
+        sodb += Bitstream(false);
+
+      for (int i = 0; i != 16; i++) {
+        Block4x4 block = mb.get_Y_4x4_block(i);
+        for (int j = 0; j != 16; j++)
+          sodb += Bitstream(static_cast<std::uint8_t>(block[j]), 8);
+      }
+
+      for (int i = 0; i != 4; i++) {
+        Block4x4 block = mb.get_Cb_4x4_block(i);
+        for (int j = 0; j != 16; j++)
+          sodb += Bitstream(static_cast<std::uint8_t>(block[j]), 8);
+      }
+
+      for (int i = 0; i != 4; i++) {
+        Block4x4 block = mb.get_Cr_4x4_block(i);
+        for (int j = 0; j != 16; j++)
+          sodb += Bitstream(static_cast<std::uint8_t>(block[j]), 8);
+      }
+
       continue;
     }
 
@@ -268,10 +289,11 @@ Bitstream Writer::write_slice_data(Frame& frame) {
       else
         cbp += 32;
 
-      if (mb.coded_block_pattern_luma)
-        cbp += 15;
+      for (int i = 0; i != 4; i++)
+        if (mb.coded_block_pattern_luma_4x4[i])
+          cbp += (1 << i);
 
-      sodb += me(cbp);
+      sodb += ue(me[cbp]);
     }
 
     if (mb.coded_block_pattern_luma || mb.coded_block_pattern_chroma_DC || mb.coded_block_pattern_chroma_AC || mb.is_intra16x16) {

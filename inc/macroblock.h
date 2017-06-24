@@ -27,6 +27,7 @@ public:
   bool is_I_PCM = false;
 
   bool coded_block_pattern_luma = false;
+  std::array<bool, 4> coded_block_pattern_luma_4x4{{false, false, false, false}};
   bool coded_block_pattern_chroma_DC = false;
   bool coded_block_pattern_chroma_AC = false;
 

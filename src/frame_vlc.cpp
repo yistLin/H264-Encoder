@@ -32,11 +32,18 @@ void vlc_frame(Frame& frame) {
     if (mb.is_intra16x16)
       mb.bitstream += vlc_Y_DC(mb, nc_Y_table, frame);
 
-    Bitstream temp_luma;
+    std::array<Bitstream, 4> temp_luma;
     for (int i = 0; i != 16; i++)
-      temp_luma += vlc_Y(i, mb, nc_Y_table, frame);
-    if (mb.coded_block_pattern_luma)
-      mb.bitstream += temp_luma;
+      temp_luma[i / 4] += vlc_Y(i, mb, nc_Y_table, frame);
+    if (mb.is_intra16x16) {
+      if (mb.coded_block_pattern_luma)
+        for (int i = 0; i != 4; i++)
+          mb.bitstream += temp_luma[i];
+    } else {
+      for (int i = 0; i != 4; i++)
+        if (mb.coded_block_pattern_luma_4x4[i])
+          mb.bitstream += temp_luma[i];
+    }
 
     Bitstream temp_chroma_DC;
     Bitstream temp_chroma_AC;
@@ -116,8 +123,10 @@ Bitstream vlc_Y(int cur_pos, MacroBlock& mb, std::vector<std::array<int, 17>>& n
     std::tie(bitstream, non_zero)= cavlc_block4x4(mb.get_Y_4x4_block(cur_pos), nC);
   nc_Y_table.at(mb.mb_index)[cur_pos] = non_zero;
 
-  if (non_zero != 0)
+  if (non_zero != 0) {
     mb.coded_block_pattern_luma = true;
+    mb.coded_block_pattern_luma_4x4[cur_pos / 4] = true;
+  }
 
   return bitstream;
 }
