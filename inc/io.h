@@ -49,6 +49,8 @@ private:
   Bitstream seq_parameter_set_rbsp(const int, const int, const int);
   Bitstream pic_parameter_set_rbsp();
   Bitstream slice_layer_without_partitioning_rbsp(const Bitstream&);
+  Bitstream write_slice_data(Frame& frame);
+  Bitstream mb_pred(MacroBlock& mb);
 };
 
 #endif // IO

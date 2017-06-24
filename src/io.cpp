@@ -171,13 +171,13 @@ Bitstream Writer::seq_parameter_set_rbsp(const int width, const int height, cons
   bool frame_cropping_flag = false; // u(1)
   bool vui_parameters_present_flag = false; // u(1)
 
-  sodb = Bitstream(profile_idc, 8) + Bitstream(constraint_set0_flag) + 
-         Bitstream(constraint_set1_flag) + Bitstream(constraint_set2_flag) + 
-         Bitstream(reserved_zero_5bits, 5) + Bitstream(level_idc, 8) + 
-         ue(seq_parameter_set_id) + ue(log2_max_frame_num_minus4) + 
+  sodb = Bitstream(profile_idc, 8) + Bitstream(constraint_set0_flag) +
+         Bitstream(constraint_set1_flag) + Bitstream(constraint_set2_flag) +
+         Bitstream(reserved_zero_5bits, 5) + Bitstream(level_idc, 8) +
+         ue(seq_parameter_set_id) + ue(log2_max_frame_num_minus4) +
          ue(pic_order_cnt_type) + ue(log2_max_pic_order_cnt_lsb_minus4) +
          ue(num_ref_frames) + Bitstream(gaps_in_frame_num_value_allowed_flag) +
-         ue(pic_width_in_mbs_minus_1) + ue(pic_height_in_mbs_minus_1) + 
+         ue(pic_width_in_mbs_minus_1) + ue(pic_height_in_mbs_minus_1) +
          Bitstream(frame_mbs_only_flag) + Bitstream(direct_8x8_inference_flag) +
          Bitstream(frame_cropping_flag) + Bitstream(vui_parameters_present_flag);
 
@@ -217,4 +217,84 @@ Bitstream Writer::pic_parameter_set_rbsp() {
 
 Bitstream Writer::slice_layer_without_partitioning_rbsp(const Bitstream& slice_data) {
   return Bitstream() + slice_data;
+}
+
+Bitstream Writer::write_slice_data(Frame& frame) {
+  Bitstream sodb;
+
+  for (auto& mb : frame.mbs) {
+    if (mb.is_I_PCM) {
+      sodb += ue(25);
+
+      continue;
+    }
+
+    if (mb.is_intra16x16) {
+      unsigned int type = 1;
+      if (mb.coded_block_pattern_luma)
+        type += 12;
+
+      if (mb.coded_block_pattern_chroma_DC == false && mb.coded_block_pattern_chroma_AC)
+        type += 0;
+      else if (mb.coded_block_pattern_chroma_AC == false)
+        type += 4;
+      else
+        type += 8;
+
+      type += static_cast<unsigned int>(mb.intra16x16_Y_mode);
+
+      sodb += ue(type);
+    } else {
+      sodb += ue(0);
+    }
+
+    sodb += mb_pred(mb);
+
+    if (!mb.is_intra16x16) {
+      unsigned int cbp = 0;
+      if (mb.coded_block_pattern_chroma_DC == false && mb.coded_block_pattern_chroma_AC)
+        cbp += 0;
+      else if (mb.coded_block_pattern_chroma_AC == false)
+        cbp += 16;
+      else
+        cbp += 32;
+
+      if (mb.coded_block_pattern_luma)
+        cbp += 15;
+
+      sodb += me(cbp);
+    }
+
+    if (mb.coded_block_pattern_luma || mb.coded_block_pattern_chroma_DC || mb.coded_block_pattern_chroma_AC || mb.is_intra16x16) {
+      sodb += se(0);
+      sodb += mb.bitstream;
+    }
+  }
+
+  return sodb;
+}
+
+Bitstream Writer::mb_pred(MacroBlock& mb) {
+  Bitstream sodb;
+
+  if (!mb.is_intra16x16) {
+    unsigned int last = 0;
+    for (auto& p_mode : mb.intra4x4_Y_mode) {
+      unsigned int mode = static_cast<unsigned int>(p_mode);
+      if (mode == last) {
+        sodb += Bitstream(false);
+      } else {
+        sodb += Bitstream(true);
+        if (mode < last)
+          sodb += Bitstream(static_cast<std::uint8_t>(mode), 3);
+        else
+          sodb += Bitstream(static_cast<std::uint8_t>(mode - 1), 3);
+        last = mode;
+      }
+    }
+  }
+
+  sodb += ue(static_cast<unsigned int>(mb.intra_Cr_Cb_mode));
+
+  return sodb;
 }
