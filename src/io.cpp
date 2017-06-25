@@ -163,7 +163,7 @@ Bitstream Writer::seq_parameter_set_rbsp(const int width, const int height, cons
   std::uint8_t reserved_zero_5bits = 0x00;  // u(5)
   std::uint8_t level_idc = 10;  // u(8)
   unsigned int seq_parameter_set_id = 0;  // ue(v)
-  unsigned int log2_max_frame_num_minus4 = static_cast<unsigned int>(log2(num_frames) - 4); // ue(v)
+  unsigned int log2_max_frame_num_minus4 = std::max(0, (int)log2(num_frames) - 4); // ue(v)
   unsigned int pic_order_cnt_type = 0;  // ue(v)
   unsigned int log2_max_pic_order_cnt_lsb_minus4 = log2_max_frame_num_minus4; // ue(v)
   unsigned int num_ref_frames = 0;  // ue(v)
@@ -224,13 +224,11 @@ Bitstream Writer::pic_parameter_set_rbsp() {
 }
 
 Bitstream Writer::slice_layer_without_partitioning_rbsp(const int _frame_num, Frame& frame) {
-  Bitstream header = slice_header(_frame_num);
-  return (header + write_slice_data(frame)).rbsp_trailing_bits();
+  Bitstream sodb = slice_header(_frame_num);
+  return write_slice_data(frame, sodb).rbsp_trailing_bits();
 }
 
-Bitstream Writer::write_slice_data(Frame& frame) {
-  Bitstream sodb;
-
+Bitstream Writer::write_slice_data(Frame& frame, Bitstream& sodb) {
   for (auto& mb : frame.mbs) {
     if (mb.is_I_PCM) {
       sodb += ue(25);
@@ -238,23 +236,14 @@ Bitstream Writer::write_slice_data(Frame& frame) {
       while(!sodb.byte_align())
         sodb += Bitstream(false);
 
-      for (int i = 0; i != 16; i++) {
-        Block4x4 block = mb.get_Y_4x4_block(i);
-        for (int j = 0; j != 16; j++)
-          sodb += Bitstream(static_cast<std::uint8_t>(block[j]), 8);
-      }
+      for (auto& y : mb.Y)
+        sodb += Bitstream(static_cast<std::uint8_t>(y), 8);
 
-      for (int i = 0; i != 4; i++) {
-        Block4x4 block = mb.get_Cb_4x4_block(i);
-        for (int j = 0; j != 16; j++)
-          sodb += Bitstream(static_cast<std::uint8_t>(block[j]), 8);
-      }
+      for (auto& cb : mb.Cb)
+        sodb += Bitstream(static_cast<std::uint8_t>(cb), 8);
 
-      for (int i = 0; i != 4; i++) {
-        Block4x4 block = mb.get_Cr_4x4_block(i);
-        for (int j = 0; j != 16; j++)
-          sodb += Bitstream(static_cast<std::uint8_t>(block[j]), 8);
-      }
+      for (auto& cr : mb.Cr)
+        sodb += Bitstream(static_cast<std::uint8_t>(cr), 8);
 
       continue;
     }
@@ -336,10 +325,10 @@ Bitstream Writer::slice_header(const int _frame_num) {
   unsigned int first_mb_in_slice = 0;  // ue(v)
   unsigned int slice_type = 2; // ue(v)
   unsigned int pic_parameter_set_id = 0; // ue(v)
-  unsigned int frame_num = _frame_num;  // u(v)
+  unsigned int frame_num = 0;  // u(v)
   unsigned int idr_pic_id = _frame_num; // ue(v)
   unsigned int pic_order_cnt_lsb = _frame_num;  // u(v)
-  bool no_output_of_prior_pics_flag = false; // u(1)
+  bool no_output_of_prior_pics_flag = true; // u(1)
   bool long_term_reference_flag = false; // u(1)
   int slice_qp_delta = 0;  // se(v)
   unsigned int disable_deblocking_filter_idc = 1; // ue(v)
