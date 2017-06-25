@@ -172,22 +172,46 @@ Bitstream Writer::seq_parameter_set_rbsp(const int width, const int height, cons
   unsigned int pic_height_in_mbs_minus_1 = (height % 16 == 0)? (height / 16) - 1 : height / 16; // ue(v)
   bool frame_mbs_only_flag = true;  // u(1)
   bool direct_8x8_inference_flag = false; // u(1)
-  bool frame_cropping_flag = false; // u(1)
+  bool frame_cropping_flag = (width % 16 != 0) || (height % 16 != 0); // u(1)
+
+  // if (frame_cropping_flag)
+  unsigned int frame_crop_left_offset = 0;  // ue(v)
+  unsigned int frame_crop_right_offset = ((pic_width_in_mbs_minus_1 + 1) * 16 - width) / 2; // ue(v)
+  unsigned int frame_crop_top_offset = 0; // ue(v)
+  unsigned int frame_crop_bottom_offset = ((pic_height_in_mbs_minus_1 + 1) * 16 - height) / 2;  // ue(v)
+
   bool vui_parameters_present_flag = false; // u(1)
 
   // slice header info
   log2_max_frame_num = log2_max_frame_num_minus4 + 4;
   log2_max_pic_order_cnt_lsb = log2_max_pic_order_cnt_lsb_minus4 + 4;
 
-  sodb = Bitstream(profile_idc, 8) + Bitstream(constraint_set0_flag) +
-         Bitstream(constraint_set1_flag) + Bitstream(constraint_set2_flag) +
-         Bitstream(reserved_zero_5bits, 5) + Bitstream(level_idc, 8) +
-         ue(seq_parameter_set_id) + ue(log2_max_frame_num_minus4) +
-         ue(pic_order_cnt_type) + ue(log2_max_pic_order_cnt_lsb_minus4) +
-         ue(num_ref_frames) + Bitstream(gaps_in_frame_num_value_allowed_flag) +
-         ue(pic_width_in_mbs_minus_1) + ue(pic_height_in_mbs_minus_1) +
-         Bitstream(frame_mbs_only_flag) + Bitstream(direct_8x8_inference_flag) +
-         Bitstream(frame_cropping_flag) + Bitstream(vui_parameters_present_flag);
+  sodb += Bitstream(profile_idc, 8);
+  sodb += Bitstream(constraint_set0_flag);
+  sodb += Bitstream(constraint_set1_flag); 
+  sodb += Bitstream(constraint_set2_flag);
+  sodb += Bitstream(reserved_zero_5bits, 5); 
+  sodb += Bitstream(level_idc, 8);
+  sodb += ue(seq_parameter_set_id); 
+  sodb += ue(log2_max_frame_num_minus4);
+  sodb += ue(pic_order_cnt_type); 
+  sodb += ue(log2_max_pic_order_cnt_lsb_minus4);
+  sodb += ue(num_ref_frames); 
+  sodb += Bitstream(gaps_in_frame_num_value_allowed_flag);
+  sodb += ue(pic_width_in_mbs_minus_1); 
+  sodb += ue(pic_height_in_mbs_minus_1);
+  sodb += Bitstream(frame_mbs_only_flag); 
+  sodb += Bitstream(direct_8x8_inference_flag);
+  sodb += Bitstream(frame_cropping_flag);
+
+  if (frame_cropping_flag) {
+    sodb += ue(frame_crop_left_offset);
+    sodb += ue(frame_crop_right_offset);
+    sodb += ue(frame_crop_top_offset);
+    sodb += ue(frame_crop_bottom_offset);
+  }
+
+  sodb += Bitstream(vui_parameters_present_flag);
 
   return sodb.rbsp_trailing_bits();
 }
@@ -211,14 +235,21 @@ Bitstream Writer::pic_parameter_set_rbsp() {
   bool constrained_intra_pred_flag = false; // u(1)
   bool redundant_pic_cnt_present_flag = false;  // u(1)
 
-  sodb = ue(pic_parameter_set_id) + ue(seq_parameter_set_id) +
-         Bitstream(entropy_coding_mode_flag) + Bitstream(pic_order_present_flag) +
-         ue(num_slice_groups_minus1) + ue(num_ref_idx_l0_active_minus1) +
-         ue(num_ref_idx_l1_active_minus1) + Bitstream(weighted_pred_flag) +
-         Bitstream(weighted_bipred_idc, 2) + se(pic_init_qp_minus26) +
-         se(pic_init_qs_minus26) + se(chroma_qp_index_offset) +
-         Bitstream(deblocking_filter_control_present_flag) + Bitstream(constrained_intra_pred_flag) +
-         Bitstream(redundant_pic_cnt_present_flag);
+  sodb += ue(pic_parameter_set_id); 
+  sodb += ue(seq_parameter_set_id);
+  sodb += Bitstream(entropy_coding_mode_flag); 
+  sodb += Bitstream(pic_order_present_flag);
+  sodb += ue(num_slice_groups_minus1); 
+  sodb += ue(num_ref_idx_l0_active_minus1);
+  sodb += ue(num_ref_idx_l1_active_minus1); 
+  sodb += Bitstream(weighted_pred_flag);
+  sodb += Bitstream(weighted_bipred_idc, 2); 
+  sodb += se(pic_init_qp_minus26);
+  sodb += se(pic_init_qs_minus26); 
+  sodb += se(chroma_qp_index_offset);
+  sodb += Bitstream(deblocking_filter_control_present_flag); 
+  sodb += Bitstream(constrained_intra_pred_flag);
+  sodb += Bitstream(redundant_pic_cnt_present_flag);
 
   return sodb.rbsp_trailing_bits();
 }
@@ -333,11 +364,16 @@ Bitstream Writer::slice_header(const int _frame_num) {
   int slice_qp_delta = 0;  // se(v)
   unsigned int disable_deblocking_filter_idc = 1; // ue(v)
 
-  sodb = ue(first_mb_in_slice) + ue(slice_type) +
-         ue(pic_parameter_set_id) + Bitstream(frame_num, log2_max_frame_num) +
-         ue(idr_pic_id) + Bitstream(pic_order_cnt_lsb, log2_max_pic_order_cnt_lsb) +
-         Bitstream(no_output_of_prior_pics_flag) + Bitstream(long_term_reference_flag) +
-         se(slice_qp_delta) + ue(disable_deblocking_filter_idc);
+  sodb += ue(first_mb_in_slice); 
+  sodb += ue(slice_type);
+  sodb += ue(pic_parameter_set_id); 
+  sodb += Bitstream(frame_num, log2_max_frame_num);
+  sodb += ue(idr_pic_id); 
+  sodb += Bitstream(pic_order_cnt_lsb, log2_max_pic_order_cnt_lsb);
+  sodb += Bitstream(no_output_of_prior_pics_flag); 
+  sodb += Bitstream(long_term_reference_flag);
+  sodb += se(slice_qp_delta); 
+  sodb += ue(disable_deblocking_filter_idc);
 
   return sodb;
 }
