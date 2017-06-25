@@ -253,7 +253,7 @@ Bitstream Writer::write_slice_data(Frame& frame, Bitstream& sodb) {
       if (mb.coded_block_pattern_luma)
         type += 12;
 
-      if (mb.coded_block_pattern_chroma_DC == false && mb.coded_block_pattern_chroma_AC)
+      if (mb.coded_block_pattern_chroma_DC == false && mb.coded_block_pattern_chroma_AC == false)
         type += 0;
       else if (mb.coded_block_pattern_chroma_AC == false)
         type += 4;
@@ -271,7 +271,7 @@ Bitstream Writer::write_slice_data(Frame& frame, Bitstream& sodb) {
 
     if (!mb.is_intra16x16) {
       unsigned int cbp = 0;
-      if (mb.coded_block_pattern_chroma_DC == false && mb.coded_block_pattern_chroma_AC)
+      if (mb.coded_block_pattern_chroma_DC == false && mb.coded_block_pattern_chroma_AC == false)
         cbp += 0;
       else if (mb.coded_block_pattern_chroma_AC == false)
         cbp += 16;
