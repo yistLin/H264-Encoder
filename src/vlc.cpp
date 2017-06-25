@@ -289,6 +289,9 @@ std::pair<Bitstream, int> cavlc_block4x4(Block4x4 block, const int nC) {
     int suffix_len = 0;
     bool pad_this = (trail_ones < 3);
 
+    if (total_coeff > 10 && trail_ones < 3)
+      suffix_len = 1;
+
     for (int i = resume_idx; i >= 0; i--) {
       if (mat_x[i] != 0) {
         lastCoeff--;
@@ -460,6 +463,9 @@ std::pair<Bitstream, int> cavlc_block2x2(Block2x2 block, const int nC) {
   if (lastCoeff > 0) {
     int suffix_len = 0;
     bool pad_this = (trail_ones < 3);
+
+    if (total_coeff > 10 && trail_ones < 3)
+      suffix_len = 1;
 
     for (int i = resume_idx; i >= 0; i--) {
       if (mat_x[i] != 0) {
