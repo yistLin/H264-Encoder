@@ -37,7 +37,7 @@ Bitstream::Bitstream(const std::string& s) {
   if (trail_bits != 0)
     buffer.push_back( (std::bitset<8>(s.substr((nb_int-1)*8, trail_bits)).to_ulong() << (8-trail_bits)) );
   else
-    buffer.push_back( (std::bitset<8>(s.substr((nb_int-1)*8, trail_bits)).to_ulong()) );
+    buffer.push_back( (std::bitset<8>(s.substr((nb_int-1)*8, 8)).to_ulong()) );
 }
 
 Bitstream::Bitstream(const std::uint8_t u, int digit) {
