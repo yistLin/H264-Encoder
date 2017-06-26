@@ -154,7 +154,7 @@ void intra4x4_dc(CopyBlock4x4& pred, const Predictor& predictor) {
     s1 += p[i];
   }
 
-  for (i = 9; i < 17; i++) {
+  for (i = 9; i < 13; i++) {
     s2 += p[i];
   }
 
