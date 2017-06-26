@@ -42,6 +42,18 @@ std::tuple<int, Intra4x4Mode> intra4x4(Block4x4 block,
   int min_sad = (1 << 15), sad;
   // Run all modes to get least residual
   for (mode = 0; mode < 9; mode++) {
+
+    if ((!predictor.up_available   && (Intra4x4Mode::VERTICAL   == static_cast<Intra4x4Mode>(mode))) ||
+        (!predictor.left_available && (Intra4x4Mode::HORIZONTAL == static_cast<Intra4x4Mode>(mode))) ||
+        ((!predictor.up_available || !predictor.up_right_available) && (Intra4x4Mode::DOWNLEFT == static_cast<Intra4x4Mode>(mode))) ||
+        ((!predictor.up_available || !predictor.left_available) && (Intra4x4Mode::DOWNRIGHT == static_cast<Intra4x4Mode>(mode))) ||
+        ((!predictor.up_available || !predictor.left_available) && (Intra4x4Mode::VERTICALRIGHT == static_cast<Intra4x4Mode>(mode))) ||
+        ((!predictor.up_available || !predictor.left_available) && (Intra4x4Mode::HORIZONTALDOWN == static_cast<Intra4x4Mode>(mode))) ||
+        ((!predictor.up_available || !predictor.up_right_available) && (Intra4x4Mode::VERTICALLEFT == static_cast<Intra4x4Mode>(mode))) ||
+        (!predictor.left_available && (Intra4x4Mode::HORIZONTALUP == static_cast<Intra4x4Mode>(mode)))) {
+      continue;
+    }
+
     get_intra4x4(pred, predictor, static_cast<Intra4x4Mode>(mode));
 
     sad = SAD(block.begin(), block.end(), pred.begin(), pred.begin());
@@ -321,6 +333,7 @@ Predictor get_intra4x4_predictor(
   if (ur) {
     Block4x4& tmp = *ur;
     std::copy_n(tmp.begin()+4*3, 4, p.begin()+5);
+    predictor.up_right_available = true;
   }
   else {
     std::fill_n(p.begin()+5, 4, p[4]);
