@@ -570,6 +570,12 @@ std::tuple<int, IntraChromaMode> intra8x8_chroma(Block8x8& cr_block,
   int min_sad = (1 << 15), cr_sad, cb_sad, sad;
   // Run all modes to get least residual
   for (mode = 0; mode < 4; mode++) {
+    if ((!cr_predictor.up_available   && (IntraChromaMode::VERTICAL   == static_cast<IntraChromaMode>(mode))) ||
+        (!cr_predictor.left_available && (IntraChromaMode::HORIZONTAL == static_cast<IntraChromaMode>(mode))) ||
+        (!cr_predictor.all_available  && (IntraChromaMode::PLANE      == static_cast<IntraChromaMode>(mode)))) {
+      continue;
+    }
+
     get_intra8x8_chroma(cr_pred, cr_predictor, static_cast<IntraChromaMode>(mode));
     get_intra8x8_chroma(cb_pred, cb_predictor, static_cast<IntraChromaMode>(mode));
 
