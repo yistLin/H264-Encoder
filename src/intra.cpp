@@ -331,7 +331,7 @@ Predictor get_intra4x4_predictor(
     for (int i = 0; i < 4; i++) {
       p[9+i] = tmp[i*4+3];
     }
-    predictor.up_available = true;
+    predictor.left_available = true;
   }
   else {
     std::fill_n(p.begin()+9, 4, 128);
@@ -528,7 +528,7 @@ Predictor get_intra16x16_predictor(
     for (int i = 0; i < 16; i++) {
       p[17+i] = tmp[i*16+15];
     }
-    predictor.up_available = true;
+    predictor.left_available = true;
   }
   else {
     std::fill_n(p.begin()+17, 16, 128);
@@ -745,7 +745,7 @@ Predictor get_intra8x8_chroma_predictor(
     for (int i = 0; i < 8; i++) {
       p[9+i] = tmp[i*8+7];
     }
-    predictor.up_available = true;
+    predictor.left_available = true;
   }
   else {
     std::fill_n(p.begin()+9, 8, 128);
