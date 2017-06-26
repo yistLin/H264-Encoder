@@ -333,9 +333,9 @@ Bitstream Writer::mb_pred(MacroBlock& mb) {
     for (auto& p_mode : mb.intra4x4_Y_mode) {
       unsigned int mode = static_cast<unsigned int>(p_mode);
       if (mode == last) {
-        sodb += Bitstream(false);
-      } else {
         sodb += Bitstream(true);
+      } else {
+        sodb += Bitstream(false);
         if (mode < last)
           sodb += Bitstream(static_cast<std::uint8_t>(mode), 3);
         else
