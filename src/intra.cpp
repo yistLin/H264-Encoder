@@ -368,6 +368,13 @@ std::tuple<int, Intra16x16Mode> intra16x16(Block16x16& block,
   int min_sad = (1 << 15), sad;
   // Run all modes to get least residual
   for (mode = 0; mode < 4; mode++) {
+
+    if ((!predictor.up_available   && (Intra16x16Mode::VERTICAL   == static_cast<Intra16x16Mode>(mode))) ||
+        (!predictor.left_available && (Intra16x16Mode::HORIZONTAL == static_cast<Intra16x16Mode>(mode))) ||
+        (!predictor.all_available  && (Intra16x16Mode::PLANE      == static_cast<Intra16x16Mode>(mode)))) {
+      continue;
+    }
+
     get_intra16x16(pred, predictor, static_cast<Intra16x16Mode>(mode));
 
     sad = SAD(block.begin(), block.end(), pred.begin(), pred.begin());
