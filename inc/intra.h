@@ -16,9 +16,10 @@ public:
     std::vector<int> pred_pel;
     bool up_available;
     bool left_available;
+    bool up_right_available;
     bool all_available;
 
-    Predictor(int size): up_available(false), left_available(false), all_available(false) {
+    Predictor(int size): up_available(false), left_available(false), up_right_available(false), all_available(false) {
       switch (size) {
         case 4:
           this->pred_pel.reserve(13);
