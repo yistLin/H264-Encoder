@@ -223,6 +223,14 @@ void scan_zigzag(Block2x2 block, int tblock[]) {
 
 std::pair<Bitstream, int> cavlc_block4x4(Block4x4 block, const int nC) {
   int mat_x[16];
+
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      printf("%3d", block[i*4+j]);
+    }
+    printf("\n");
+  }
+  printf("\n");
   scan_zigzag(block, mat_x);
 
   int total_coeff = 0;
@@ -381,7 +389,11 @@ std::pair<Bitstream, int> cavlc_block4x4(Block4x4 block, const int nC) {
       }
 
       if (j != -1) {
-        std::string run_str = run_vlc_table[zero_cnt][last_zeros];
+        std::string run_str = "";
+        if (last_zeros <= 6)
+          run_str = run_vlc_table[zero_cnt][last_zeros];
+        else
+          run_str = run_vlc_table[zero_cnt][7];
         last_zeros -= zero_cnt;
         coeff_cnt--;
         run_vlc_str += run_str;
@@ -393,6 +405,17 @@ std::pair<Bitstream, int> cavlc_block4x4(Block4x4 block, const int nC) {
   }
 
   std::string final_str = num_vlc_table[coeff_table_idx][total_coeff][trail_ones] + ones_str + level_vlc_str + zero_vlc_table[total_zeros][total_coeff] + run_vlc_str;
+
+  // if (total_coeff > 0) {
+  //   printf("[cavlc4x4] total_coeff = %d, trail_ones = %d, nC = %d\n", total_coeff, trail_ones, nC);
+  //   std::cout << "coeff_token = " << num_vlc_table[coeff_table_idx][total_coeff][trail_ones] << std::endl;
+  //   std::cout << "sign_ones   = " << ones_str << std::endl;
+  //   std::cout << "level       = " << level_vlc_str << std::endl;
+  //   std::cout << "zeros       = " << zero_vlc_table[total_zeros][total_coeff] << std::endl;
+  //   std::cout << "run         = " << run_vlc_str << std::endl;
+  //   std::cout << Bitstream(final_str).to_string() << std::endl;
+  // }
+
   return std::make_pair(Bitstream(final_str), total_coeff);
 }
 
@@ -556,7 +579,11 @@ std::pair<Bitstream, int> cavlc_block2x2(Block2x2 block, const int nC) {
       }
 
       if (j != -1) {
-        std::string run_str = run_vlc_table[zero_cnt][last_zeros];
+        std::string run_str = "";
+        if (last_zeros <= 6)
+          run_str = run_vlc_table[zero_cnt][last_zeros];
+        else
+          run_str = run_vlc_table[zero_cnt][7];
         last_zeros -= zero_cnt;
         coeff_cnt--;
         run_vlc_str += run_str;
@@ -568,6 +595,12 @@ std::pair<Bitstream, int> cavlc_block2x2(Block2x2 block, const int nC) {
   }
 
   std::string final_str = num_vlc_table[coeff_table_idx][total_coeff][trail_ones] + ones_str + level_vlc_str + zero_vlc_table2x2[total_zeros][total_coeff] + run_vlc_str;
+
+  // if (total_coeff > 0) {
+  //   printf("[cavlc2x2] total_coeff = %d, trail_ones = %d, nC = %d\n", total_coeff, trail_ones, nC);
+  //   std::cout << Bitstream(final_str).to_string() << std::endl;
+  // }
+
   return std::make_pair(Bitstream(final_str), total_coeff);
 }
 
