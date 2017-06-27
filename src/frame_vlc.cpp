@@ -1,7 +1,7 @@
 #include "frame_vlc.h"
 
 void vlc_frame(Frame& frame) {
-  std::vector<std::array<int, 17>> nc_Y_table;
+  std::vector<std::array<int, 16>> nc_Y_table;
   nc_Y_table.reserve(frame.mbs.size());
   std::vector<std::array<int, 4>> nc_Cb_table;
   nc_Cb_table.reserve(frame.mbs.size());
@@ -11,7 +11,7 @@ void vlc_frame(Frame& frame) {
   // int mb_no = 0;
   for (auto& mb : frame.mbs) {
     // f_logger.log(Level::DEBUG, "mb #" + std::to_string(mb_no++));
-    std::array<int, 17> current_Y_table;
+    std::array<int, 16> current_Y_table;
     std::array<int, 4> current_Cb_table;
     std::array<int, 4> current_Cr_table;
     nc_Y_table.push_back(current_Y_table);
@@ -19,7 +19,7 @@ void vlc_frame(Frame& frame) {
     nc_Cr_table.push_back(current_Cr_table);
 
     if (mb.is_I_PCM) {
-      for (int i = 0; i != 17; i++)
+      for (int i = 0; i != 16; i++)
         nc_Y_table.at(mb.mb_index)[i] = 16;
       for (int i = 0; i != 4; i++) {
         nc_Cb_table.at(mb.mb_index)[i] = 16;
@@ -61,28 +61,45 @@ void vlc_frame(Frame& frame) {
   }
 }
 
-Bitstream vlc_Y_DC(MacroBlock& mb, std::vector<std::array<int, 17>>& nc_Y_table, Frame& frame) {
+Bitstream vlc_Y_DC(MacroBlock& mb, std::vector<std::array<int, 16>>& nc_Y_table, Frame& frame) {
   int nA_index = frame.get_neighbor_index(mb.mb_index, MB_NEIGHBOR_L);
   int nB_index = frame.get_neighbor_index(mb.mb_index, MB_NEIGHBOR_U);
 
-  int nC;
-  if (nA_index != -1 && nB_index != -1 && frame.mbs.at(nA_index).is_intra16x16 && frame.mbs.at(nB_index).is_intra16x16)
-    nC = (nc_Y_table.at(nA_index)[16] + nc_Y_table.at(nB_index)[16] + 1) >> 1;
-  else if (nA_index != -1 && frame.mbs.at(nA_index).is_intra16x16)
-    nC = nc_Y_table.at(nA_index)[16];
-  else if (nB_index != -1 && frame.mbs.at(nB_index).is_intra16x16)
-    nC = nc_Y_table.at(nB_index)[16];
-  else
+  std::array<int, 4> L_4x4block_pos{{5, 7, 13, 15}};
+  std::array<int, 4> U_4x4block_pos{{10, 11, 14, 15}};
+
+  int nC = 0;
+  if (nA_index != -1 && nB_index != -1 && frame.mbs.at(nA_index).is_intra16x16 && frame.mbs.at(nB_index).is_intra16x16) {
+    for (int i = 0; i != 4; i++)
+      nC += nc_Y_table.at(nA_index)[L_4x4block_pos[i]];
+    for (int i = 0; i != 4; i++)
+      nC += nc_Y_table.at(nB_index)[U_4x4block_pos[i]];
+    /*for (int i = 0; i != 16; i++)
+      nC += nc_Y_table.at(nA_index)[i];
+    for (int i = 0; i != 16; i++)
+      nC += nc_Y_table.at(nB_index)[i];*/
+  } else if (nA_index != -1) {
+    for (int i = 0; i != 4; i++)
+      nC += nc_Y_table.at(nA_index)[L_4x4block_pos[i]];
+    /*for (int i = 0; i != 16; i++)
+      nC += nc_Y_table.at(nA_index)[i];*/
+  } else if (nB_index != -1) {
+    for (int i = 0; i != 4; i++)
+      nC += nc_Y_table.at(nB_index)[U_4x4block_pos[i]];
+    /*for (int i = 0; i != 16; i++)
+      nC += nc_Y_table.at(nB_index)[i];*/
+  } else {
     nC = 0;
+  }
 
   Bitstream bitstream;
   int non_zero;
-  std::tie(bitstream, non_zero)= cavlc_block4x4(mb.get_Y_DC_block(), nC);
-  nc_Y_table.at(mb.mb_index)[16] = non_zero;
+  std::tie(bitstream, non_zero) = cavlc_block4x4(mb.get_Y_DC_block(), nC);
+
   return bitstream;
 }
 
-Bitstream vlc_Y(int cur_pos, MacroBlock& mb, std::vector<std::array<int, 17>>& nc_Y_table, Frame& frame) {
+Bitstream vlc_Y(int cur_pos, MacroBlock& mb, std::vector<std::array<int, 16>>& nc_Y_table, Frame& frame) {
   int real_pos = MacroBlock::convert_table[cur_pos];
 
   int nA_index, nA_pos;
@@ -118,9 +135,9 @@ Bitstream vlc_Y(int cur_pos, MacroBlock& mb, std::vector<std::array<int, 17>>& n
   Bitstream bitstream;
   int non_zero;
   if (mb.is_intra16x16)
-    std::tie(bitstream, non_zero)= cavlc_block4x4(mb.get_Y_AC_block(cur_pos), nC);
+    std::tie(bitstream, non_zero) = cavlc_block4x4(mb.get_Y_AC_block(cur_pos), nC);
   else
-    std::tie(bitstream, non_zero)= cavlc_block4x4(mb.get_Y_4x4_block(cur_pos), nC);
+    std::tie(bitstream, non_zero) = cavlc_block4x4(mb.get_Y_4x4_block(cur_pos), nC);
   nc_Y_table.at(mb.mb_index)[cur_pos] = non_zero;
 
   if (non_zero != 0) {
@@ -134,7 +151,7 @@ Bitstream vlc_Y(int cur_pos, MacroBlock& mb, std::vector<std::array<int, 17>>& n
 Bitstream vlc_Cb_DC(MacroBlock& mb) {
   Bitstream bitstream;
   int non_zero;
-  std::tie(bitstream, non_zero)= cavlc_block2x2(mb.get_Cb_DC_block(), -1);
+  std::tie(bitstream, non_zero) = cavlc_block2x2(mb.get_Cb_DC_block(), -1);
 
   if (non_zero != 0)
     mb.coded_block_pattern_chroma_DC = true;
@@ -145,7 +162,7 @@ Bitstream vlc_Cb_DC(MacroBlock& mb) {
 Bitstream vlc_Cr_DC(MacroBlock& mb) {
   Bitstream bitstream;
   int non_zero;
-  std::tie(bitstream, non_zero)= cavlc_block2x2(mb.get_Cr_DC_block(), -1);
+  std::tie(bitstream, non_zero) = cavlc_block2x2(mb.get_Cr_DC_block(), -1);
 
   if (non_zero != 0)
     mb.coded_block_pattern_chroma_DC = true;
@@ -184,7 +201,7 @@ Bitstream vlc_Cb_AC(int cur_pos, MacroBlock& mb, std::vector<std::array<int, 4>>
 
   Bitstream bitstream;
   int non_zero;
-  std::tie(bitstream, non_zero)= cavlc_block4x4(mb.get_Cb_AC_block(cur_pos), nC);
+  std::tie(bitstream, non_zero) = cavlc_block4x4(mb.get_Cb_AC_block(cur_pos), nC);
   nc_Cb_table.at(mb.mb_index)[cur_pos] = non_zero;
 
   if (non_zero != 0)
@@ -224,7 +241,7 @@ Bitstream vlc_Cr_AC(int cur_pos, MacroBlock& mb, std::vector<std::array<int, 4>>
 
   Bitstream bitstream;
   int non_zero;
-  std::tie(bitstream, non_zero)= cavlc_block4x4(mb.get_Cr_AC_block(cur_pos), nC);
+  std::tie(bitstream, non_zero) = cavlc_block4x4(mb.get_Cr_AC_block(cur_pos), nC);
   nc_Cr_table.at(mb.mb_index)[cur_pos] = non_zero;
 
   if (non_zero != 0)
