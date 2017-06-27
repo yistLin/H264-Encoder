@@ -49,3 +49,4 @@ Reference:
 
 * [Next-Generation Video Coding and Streaming](https://books.google.com.tw/books?id=Sa-RCwAAQBAJ&printsec=frontcover&hl=zh-TW#v=onepage&q&f=false)
 * [Next-Generation Video Coding and Streaming -- Wiley Online Library](http://onlinelibrary.wiley.com/book/10.1002/9781119133346)
+* [新一代視頻壓縮編碼標準H.264](http://read.pudn.com/downloads139/ebook/600638/%E6%96%B0%E4%B8%80%E4%BB%A3%E8%A7%86%E9%A2%91%E5%8E%8B%E7%BC%A9%E7%BC%96%E7%A0%81%E6%A0%87%E5%87%86H[1].264(%E6%AF%95%E5%8E%9A%E6%9D%B0).pdf)
