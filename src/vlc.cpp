@@ -189,6 +189,8 @@ std::string run_vlc_table[15][8] = {
   { "", "", "", "", "", "", "", "00000000001" }
 };
 
+const int incVlc[] = {0, 3, 6, 12, 24, 48, 32768};
+
 /* Unsigned Exponential Golomb coding
  */
 Bitstream ue(const unsigned int codenum) {
@@ -223,14 +225,6 @@ void scan_zigzag(Block2x2 block, int tblock[]) {
 
 std::pair<Bitstream, int> cavlc_block4x4(Block4x4 block, const int nC) {
   int mat_x[16];
-
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
-      printf("%3d", block[i*4+j]);
-    }
-    printf("\n");
-  }
-  printf("\n");
   scan_zigzag(block, mat_x);
 
   int total_coeff = 0;
@@ -364,6 +358,8 @@ std::pair<Bitstream, int> cavlc_block4x4(Block4x4 block, const int nC) {
 
             if (std::abs(mat_x[i]) > (3 << (suffix_len - 1)) && suffix_len < 6)
               suffix_len++;
+            if (lastCoeff == total_coeff - 1 - trail_ones && std::abs(mat_x[i]) > 3)
+              suffix_len = 2;
           }
           else {
             level_prefix++;
@@ -487,9 +483,6 @@ std::pair<Bitstream, int> cavlc_block2x2(Block2x2 block, const int nC) {
     int suffix_len = 0;
     bool pad_this = (trail_ones < 3);
 
-    if (total_coeff > 10 && trail_ones < 3)
-      suffix_len = 1;
-
     for (int i = resume_idx; i >= 0; i--) {
       if (mat_x[i] != 0) {
         lastCoeff--;
@@ -554,6 +547,8 @@ std::pair<Bitstream, int> cavlc_block2x2(Block2x2 block, const int nC) {
 
             if (std::abs(mat_x[i]) > (3 << (suffix_len - 1)) && suffix_len < 6)
               suffix_len++;
+            if (lastCoeff == total_coeff - 1 - trail_ones && std::abs(mat_x[i]) > 3)
+              suffix_len = 2;
           }
           else {
             level_prefix++;
