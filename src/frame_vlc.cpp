@@ -65,32 +65,15 @@ Bitstream vlc_Y_DC(MacroBlock& mb, std::vector<std::array<int, 16>>& nc_Y_table,
   int nA_index = frame.get_neighbor_index(mb.mb_index, MB_NEIGHBOR_L);
   int nB_index = frame.get_neighbor_index(mb.mb_index, MB_NEIGHBOR_U);
 
-  std::array<int, 4> L_4x4block_pos{{5, 7, 13, 15}};
-  std::array<int, 4> U_4x4block_pos{{10, 11, 14, 15}};
-
-  int nC = 0;
-  if (nA_index != -1 && nB_index != -1 && frame.mbs.at(nA_index).is_intra16x16 && frame.mbs.at(nB_index).is_intra16x16) {
-    for (int i = 0; i != 4; i++)
-      nC += nc_Y_table.at(nA_index)[L_4x4block_pos[i]];
-    for (int i = 0; i != 4; i++)
-      nC += nc_Y_table.at(nB_index)[U_4x4block_pos[i]];
-    /*for (int i = 0; i != 16; i++)
-      nC += nc_Y_table.at(nA_index)[i];
-    for (int i = 0; i != 16; i++)
-      nC += nc_Y_table.at(nB_index)[i];*/
-  } else if (nA_index != -1) {
-    for (int i = 0; i != 4; i++)
-      nC += nc_Y_table.at(nA_index)[L_4x4block_pos[i]];
-    /*for (int i = 0; i != 16; i++)
-      nC += nc_Y_table.at(nA_index)[i];*/
-  } else if (nB_index != -1) {
-    for (int i = 0; i != 4; i++)
-      nC += nc_Y_table.at(nB_index)[U_4x4block_pos[i]];
-    /*for (int i = 0; i != 16; i++)
-      nC += nc_Y_table.at(nB_index)[i];*/
-  } else {
+  int nC;
+  if (nA_index != -1 && nB_index != -1)
+    nC = (nc_Y_table.at(nA_index)[5] + nc_Y_table.at(nB_index)[10] + 1) >> 1;
+  else if (nA_index != -1)
+    nC = nc_Y_table.at(nA_index)[5];
+  else if (nB_index != -1)
+    nC = nc_Y_table.at(nB_index)[10];
+  else
     nC = 0;
-  }
 
   Bitstream bitstream;
   int non_zero;
