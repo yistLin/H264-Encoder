@@ -25,7 +25,7 @@ const int me[] = {
 Bitstream ue(const unsigned int);
 Bitstream se(const int);
 
-std::pair<Bitstream, int> cavlc_block2x2(Block2x2, const int);
-std::pair<Bitstream, int> cavlc_block4x4(Block4x4, const int);
+std::pair<Bitstream, int> cavlc_block2x2(Block2x2, const int, const int);
+std::pair<Bitstream, int> cavlc_block4x4(Block4x4, const int, const int);
 
 #endif

@@ -77,7 +77,7 @@ Bitstream vlc_Y_DC(MacroBlock& mb, std::vector<std::array<int, 16>>& nc_Y_table,
 
   Bitstream bitstream;
   int non_zero;
-  std::tie(bitstream, non_zero) = cavlc_block4x4(mb.get_Y_DC_block(), nC);
+  std::tie(bitstream, non_zero) = cavlc_block4x4(mb.get_Y_DC_block(), nC, 16);
 
   return bitstream;
 }
@@ -118,9 +118,9 @@ Bitstream vlc_Y(int cur_pos, MacroBlock& mb, std::vector<std::array<int, 16>>& n
   Bitstream bitstream;
   int non_zero;
   if (mb.is_intra16x16)
-    std::tie(bitstream, non_zero) = cavlc_block4x4(mb.get_Y_AC_block(cur_pos), nC);
+    std::tie(bitstream, non_zero) = cavlc_block4x4(mb.get_Y_AC_block(cur_pos), nC, 15);
   else
-    std::tie(bitstream, non_zero) = cavlc_block4x4(mb.get_Y_4x4_block(cur_pos), nC);
+    std::tie(bitstream, non_zero) = cavlc_block4x4(mb.get_Y_4x4_block(cur_pos), nC, 16);
   nc_Y_table.at(mb.mb_index)[cur_pos] = non_zero;
 
   if (non_zero != 0) {
@@ -134,7 +134,7 @@ Bitstream vlc_Y(int cur_pos, MacroBlock& mb, std::vector<std::array<int, 16>>& n
 Bitstream vlc_Cb_DC(MacroBlock& mb) {
   Bitstream bitstream;
   int non_zero;
-  std::tie(bitstream, non_zero) = cavlc_block2x2(mb.get_Cb_DC_block(), -1);
+  std::tie(bitstream, non_zero) = cavlc_block2x2(mb.get_Cb_DC_block(), -1, 4);
 
   if (non_zero != 0)
     mb.coded_block_pattern_chroma_DC = true;
@@ -145,7 +145,7 @@ Bitstream vlc_Cb_DC(MacroBlock& mb) {
 Bitstream vlc_Cr_DC(MacroBlock& mb) {
   Bitstream bitstream;
   int non_zero;
-  std::tie(bitstream, non_zero) = cavlc_block2x2(mb.get_Cr_DC_block(), -1);
+  std::tie(bitstream, non_zero) = cavlc_block2x2(mb.get_Cr_DC_block(), -1, 4);
 
   if (non_zero != 0)
     mb.coded_block_pattern_chroma_DC = true;
@@ -184,7 +184,7 @@ Bitstream vlc_Cb_AC(int cur_pos, MacroBlock& mb, std::vector<std::array<int, 4>>
 
   Bitstream bitstream;
   int non_zero;
-  std::tie(bitstream, non_zero) = cavlc_block4x4(mb.get_Cb_AC_block(cur_pos), nC);
+  std::tie(bitstream, non_zero) = cavlc_block4x4(mb.get_Cb_AC_block(cur_pos), nC, 15);
   nc_Cb_table.at(mb.mb_index)[cur_pos] = non_zero;
 
   if (non_zero != 0)
@@ -224,7 +224,7 @@ Bitstream vlc_Cr_AC(int cur_pos, MacroBlock& mb, std::vector<std::array<int, 4>>
 
   Bitstream bitstream;
   int non_zero;
-  std::tie(bitstream, non_zero) = cavlc_block4x4(mb.get_Cr_AC_block(cur_pos), nC);
+  std::tie(bitstream, non_zero) = cavlc_block4x4(mb.get_Cr_AC_block(cur_pos), nC, 15);
   nc_Cr_table.at(mb.mb_index)[cur_pos] = non_zero;
 
   if (non_zero != 0)

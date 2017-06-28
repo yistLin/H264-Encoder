@@ -222,7 +222,7 @@ void scan_zigzag(Block2x2 block, int tblock[]) {
   tblock[3] = block[3];
 }
 
-std::pair<Bitstream, int> cavlc_block4x4(Block4x4 block, const int nC) {
+std::pair<Bitstream, int> cavlc_block4x4(Block4x4 block, const int nC, const int maxNumCoeff) {
   int mat_x[16];
   scan_zigzag(block, mat_x);
 
@@ -373,6 +373,10 @@ std::pair<Bitstream, int> cavlc_block4x4(Block4x4 block, const int nC) {
   std::string run_vlc_str = "";
   int last_zeros = total_zeros;
   int coeff_cnt = total_coeff - 1;
+
+  if (total_coeff == maxNumCoeff)
+    last_zeros = 0;
+
   for (int i = 15; i >= 0; i--) {
     if (mat_x[i] != 0) {
       int zero_cnt = 0;
@@ -399,7 +403,11 @@ std::pair<Bitstream, int> cavlc_block4x4(Block4x4 block, const int nC) {
       break;
   }
 
-  std::string final_str = num_vlc_table[coeff_table_idx][total_coeff][trail_ones] + ones_str + level_vlc_str + zero_vlc_table[total_zeros][total_coeff] + run_vlc_str;
+  std::string final_str = num_vlc_table[coeff_table_idx][total_coeff][trail_ones] + ones_str + level_vlc_str;
+  if (total_coeff < maxNumCoeff)
+    final_str += zero_vlc_table[total_zeros][total_coeff];
+  final_str += run_vlc_str;
+
 
   // if (total_coeff > 0) {
     printf("[cavlc4x4] nC = %d, total_coeff = %d, trail_ones = %d\n", nC, total_coeff, trail_ones);
@@ -414,7 +422,7 @@ std::pair<Bitstream, int> cavlc_block4x4(Block4x4 block, const int nC) {
   return std::make_pair(Bitstream(final_str), total_coeff);
 }
 
-std::pair<Bitstream, int> cavlc_block2x2(Block2x2 block, const int nC) {
+std::pair<Bitstream, int> cavlc_block2x2(Block2x2 block, const int nC, const int maxNumCoeff) {
   int mat_x[4];
   scan_zigzag(block, mat_x);
 
@@ -562,6 +570,10 @@ std::pair<Bitstream, int> cavlc_block2x2(Block2x2 block, const int nC) {
   std::string run_vlc_str = "";
   int last_zeros = total_zeros;
   int coeff_cnt = total_coeff - 1;
+
+  if (total_coeff == maxNumCoeff)
+    last_zeros = 0;
+
   for (int i = 3; i >= 0; i--) {
     if (mat_x[i] != 0) {
       int zero_cnt = 0;
@@ -588,7 +600,10 @@ std::pair<Bitstream, int> cavlc_block2x2(Block2x2 block, const int nC) {
       break;
   }
 
-  std::string final_str = num_vlc_table[coeff_table_idx][total_coeff][trail_ones] + ones_str + level_vlc_str + zero_vlc_table2x2[total_zeros][total_coeff] + run_vlc_str;
+  std::string final_str = num_vlc_table[coeff_table_idx][total_coeff][trail_ones] + ones_str + level_vlc_str;
+  if (total_coeff < maxNumCoeff)
+    final_str += zero_vlc_table2x2[total_zeros][total_coeff];
+  final_str += run_vlc_str;
 
   // if (total_coeff > 0) {
     printf("[cavlc2x2] nC = %d, total_coeff = %d, trail_ones = %d\n", nC, total_coeff, trail_ones);
