@@ -181,7 +181,7 @@ Bitstream vlc_Cb_AC(int cur_pos, MacroBlock& mb, std::vector<std::array<int, 4>>
   }
 
   int nB_index, nB_pos;
-  if (0 <= cur_pos && cur_pos <= 3) {
+  if (0 <= cur_pos && cur_pos <= 1) {
     nB_index = frame.get_neighbor_index(mb.mb_index, MB_NEIGHBOR_U);
     nB_pos = cur_pos + 2;
   } else {
@@ -221,7 +221,7 @@ Bitstream vlc_Cr_AC(int cur_pos, MacroBlock& mb, std::vector<std::array<int, 4>>
   }
 
   int nB_index, nB_pos;
-  if (0 <= cur_pos && cur_pos <= 3) {
+  if (0 <= cur_pos && cur_pos <= 1) {
     nB_index = frame.get_neighbor_index(mb.mb_index, MB_NEIGHBOR_U);
     nB_pos = cur_pos + 2;
   } else {
