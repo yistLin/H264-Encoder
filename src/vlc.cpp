@@ -410,12 +410,12 @@ std::pair<Bitstream, int> cavlc_block4x4(Block4x4 block, const int nC, const int
 
 
   // if (total_coeff > 0) {
-    printf("[cavlc4x4] nC = %d, total_coeff = %d, trail_ones = %d\n", nC, total_coeff, trail_ones);
-    std::cout << "  coeff_token = " << num_vlc_table[coeff_table_idx][total_coeff][trail_ones] << std::endl;
-    std::cout << "  sign_ones   = " << ones_str << std::endl;
-    std::cout << "  level       = " << level_vlc_str << std::endl;
-    std::cout << "  zeros       = " << zero_vlc_table[total_zeros][total_coeff] << std::endl;
-    std::cout << "  run         = " << run_vlc_str << std::endl;
+  //  printf("[cavlc4x4] nC = %d, total_coeff = %d, trail_ones = %d\n", nC, total_coeff, trail_ones);
+  //  std::cout << "  coeff_token = " << num_vlc_table[coeff_table_idx][total_coeff][trail_ones] << std::endl;
+  //  std::cout << "  sign_ones   = " << ones_str << std::endl;
+  //  std::cout << "  level       = " << level_vlc_str << std::endl;
+  //  std::cout << "  zeros       = " << zero_vlc_table[total_zeros][total_coeff] << std::endl;
+  //  std::cout << "  run         = " << run_vlc_str << std::endl;
     // std::cout << Bitstream(final_str).to_string() << std::endl;
   // }
 
@@ -606,12 +606,12 @@ std::pair<Bitstream, int> cavlc_block2x2(Block2x2 block, const int nC, const int
   final_str += run_vlc_str;
 
   // if (total_coeff > 0) {
-    printf("[cavlc2x2] nC = %d, total_coeff = %d, trail_ones = %d\n", nC, total_coeff, trail_ones);
-    std::cout << "  coeff_token = " << num_vlc_table[coeff_table_idx][total_coeff][trail_ones] << std::endl;
-    std::cout << "  sign_ones   = " << ones_str << std::endl;
-    std::cout << "  level       = " << level_vlc_str << std::endl;
-    std::cout << "  zeros       = " << zero_vlc_table2x2[total_zeros][total_coeff] << std::endl;
-    std::cout << "  run         = " << run_vlc_str << std::endl;
+  //  printf("[cavlc2x2] nC = %d, total_coeff = %d, trail_ones = %d\n", nC, total_coeff, trail_ones);
+  //  std::cout << "  coeff_token = " << num_vlc_table[coeff_table_idx][total_coeff][trail_ones] << std::endl;
+  //  std::cout << "  sign_ones   = " << ones_str << std::endl;
+  //  std::cout << "  level       = " << level_vlc_str << std::endl;
+  //  std::cout << "  zeros       = " << zero_vlc_table2x2[total_zeros][total_coeff] << std::endl;
+  //  std::cout << "  run         = " << run_vlc_str << std::endl;
   // }
 
   return std::make_pair(Bitstream(final_str), total_coeff);
