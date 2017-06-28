@@ -147,6 +147,41 @@ Bitstream Bitstream::rbsp_trailing_bits() {
   return rbsp;
 }
 
+/* This function add emulation_prevention_three_byte for all occurrences
+ * of the following byte sequences in the stream
+ *  0x000000  -> 0x00000300
+ *  0x000001  -> 0x00000301
+ *  0x000002  -> 0x00000302
+ *  0x000003  -> 0x00000303
+ */
+Bitstream Bitstream::rbsp_to_ebsp() {
+  
+  assert(nb_bits % 8 == 0);
+
+  // output: ebsp
+  Bitstream ebsp;
+  int count = 0;
+
+  for (const auto& byte : buffer) {
+    // Detect 0x00 twice
+    if (count == 2 && !(byte & 0xfc)) {
+      ebsp.buffer.push_back(0x03);
+      ebsp.nb_bits += 8;
+      count = 0;
+    }
+    ebsp.buffer.push_back(byte);
+    ebsp.nb_bits += 8;
+    if (byte == 0x00) {
+      count++;
+    }
+    else {
+      count = 0;
+    }
+  }
+
+  return ebsp;
+}
+
 std::string Bitstream::to_string() {
   int nb_full_digit = nb_bits / 8;
   int trail_bits = nb_bits % 8;

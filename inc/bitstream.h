@@ -1,6 +1,7 @@
 #ifndef BITSTREAM
 #define BITSTREAM
 
+#include <cassert>
 #include <cstdint>
 #include <vector>
 #include <string>
@@ -24,6 +25,7 @@ public:
 
   bool byte_align();
   Bitstream rbsp_trailing_bits();
+  Bitstream rbsp_to_ebsp();
 
   // for testing
   std::string to_string();
