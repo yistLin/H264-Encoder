@@ -1,13 +1,23 @@
 #include "qdct.h"
 
+const int mat_zz[] = {
+  0,  1,  5,  6,
+  2,  4,  7, 12,
+  3,  8, 11, 13, 
+  9, 10, 14, 15
+};
+
 /* Core transformation
  *
  * given the residual matrix: R, the core matrix: W, is
  *   W = Cf x R x Cf^T
  */
-void forward_dct4x4(const int mat_x[][4], int mat_z[][4]) {
-  int mat_temp[4][4];
+void forward_dct4x4(const int mat_y[][4], int mat_z[][4]) {
+  int mat_x[4][4], mat_temp[4][4];
   int p0, p1, p2, p3, t0, t1, t2, t3;
+
+  for (int i = 0; i < 16; i++)
+    mat_x[mat_zz[i]/4][mat_zz[i]%4] = mat_y[i/4][i%4];
 
 	// Horizontal
   for (int i = 0; i < 4; i++) {
@@ -51,8 +61,8 @@ void forward_dct4x4(const int mat_x[][4], int mat_z[][4]) {
  * given the core matrix: W, the residual matrix: R is
  *   R = Ci x W x Ci^T
  */
-void inverse_dct4x4(const int mat_x[][4], int mat_z[][4]) {
-  int mat_temp[4][4];
+void inverse_dct4x4(const int mat_x[][4], int mat_y[][4]) {
+  int mat_temp[4][4], mat_z[4][4];
   int p0, p1, p2, p3, t0, t1, t2, t3;
 
 	// Horizontal
@@ -95,6 +105,9 @@ void inverse_dct4x4(const int mat_x[][4], int mat_z[][4]) {
     for (int j = 0; j < 4; j++)
       mat_z[i][j] = int(mat_z[i][j] / 64.0 + 0.5);
   }
+
+  for (int i = 0; i < 16; i++)
+    mat_y[i/4][i%4] = mat_z[mat_zz[i]/4][mat_zz[i]%4];
 }
 
 /* Quantization
