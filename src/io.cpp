@@ -123,7 +123,7 @@ Writer::Writer(std::string filename) {
 void Writer::write_sps(const int width, const int height, const int num_frames) {
   Bitstream output(stopcode, 32);
   Bitstream rbsp = seq_parameter_set_rbsp(width, height, num_frames);
-  NALUnit nal_unit(NALRefIdc::HIGHEST, NALType::SPS, rbsp);
+  NALUnit nal_unit(NALRefIdc::HIGHEST, NALType::SPS, rbsp.rbsp_to_ebsp());
 
   output += nal_unit.get();
 
@@ -134,7 +134,7 @@ void Writer::write_sps(const int width, const int height, const int num_frames) 
 void Writer::write_pps() {
   Bitstream output(stopcode, 32);
   Bitstream rbsp = pic_parameter_set_rbsp();
-  NALUnit nal_unit(NALRefIdc::HIGHEST, NALType::PPS, rbsp);
+  NALUnit nal_unit(NALRefIdc::HIGHEST, NALType::PPS, rbsp.rbsp_to_ebsp());
 
   output += nal_unit.get();
   file.write((char*)&output.buffer[0], output.buffer.size());
@@ -146,7 +146,7 @@ void Writer::write_slice(const int frame_num, Frame& frame) {
   Bitstream rbsp = slice_layer_without_partitioning_rbsp(frame_num, frame);
   rbsp += Bitstream((std::uint8_t)0x80, 8);
 
-  NALUnit nal_unit(NALRefIdc::HIGHEST, NALType::IDR, rbsp);
+  NALUnit nal_unit(NALRefIdc::HIGHEST, NALType::IDR, rbsp.rbsp_to_ebsp());
 
   output += nal_unit.get();
   file.write((char*)&output.buffer[0], output.buffer.size());
@@ -217,6 +217,13 @@ Bitstream Writer::seq_parameter_set_rbsp(const int width, const int height, cons
 }
 
 Bitstream Writer::pic_parameter_set_rbsp() {
+  const int QPC2idoffset[] = {
+    0 , 1 , 2 , 3 , 4 , 5 , 6 , 7 , 8 , 9 , 
+    10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+    20, 21, 22, 23, 24, 25, 26, 27, 28, 30,
+    31, 32, 33, 35, 36, 38, 40, 42, 45, 48
+  };
+
   Bitstream sodb;
 
   unsigned int pic_parameter_set_id = 0;  // ue(v)
@@ -230,7 +237,7 @@ Bitstream Writer::pic_parameter_set_rbsp() {
   unsigned int weighted_bipred_idc = 0; // u(2)
   int pic_init_qp_minus26 = LUMA_QP - 26; // se(v)
   int pic_init_qs_minus26 = 0;  // se(v)
-  int chroma_qp_index_offset = CHROMA_QP - LUMA_QP; // se(v)
+  int chroma_qp_index_offset = QPC2idoffset[CHROMA_QP] - LUMA_QP; // se(v)
   bool deblocking_filter_control_present_flag = true; // u(1)
   bool constrained_intra_pred_flag = false; // u(1)
   bool redundant_pic_cnt_present_flag = false;  // u(1)
@@ -292,7 +299,6 @@ Bitstream Writer::write_slice_data(Frame& frame, Bitstream& sodb) {
         type += 8;
 
       type += static_cast<unsigned int>(mb.intra16x16_Y_mode);
-
       sodb += ue(type);
     } else {
       sodb += ue(0);
