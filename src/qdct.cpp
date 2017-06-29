@@ -124,6 +124,18 @@ void forward_quantize4x4(const int mat_x[][4], int mat_z[][4], const int QP) {
   }
 }
 
+void forward_DC_quantize4x4(const int mat_x[][4], int mat_z[][4], const int QP) {
+  int qbits = 15 + floor(QP / 6);
+  int f = (int)(pow(2.0, qbits) / 3.0);
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      mat_z[i][j] = (abs(mat_x[i][j]) * mat_MF[QP % 6][0] + 2 * f) >> (qbits + 1);
+      if (mat_x[i][j] < 0)
+        mat_z[i][j] = -mat_z[i][j];
+    }
+  }
+}
+
 /* Rescaling (inversed quantization)
  *
  * By formula:
@@ -152,14 +164,13 @@ void inverse_quantize4x4(const int mat_x[][4], int mat_z[][4], const int QP) {
  */
 void inverse_DC_quantize4x4(const int mat_x[][4], int mat_z[][4], const int QP) {
   int t = floor(QP / 6);
-  int f = (int)pow(2.0, 1-t);
-  int k = 0;
+  int f = (int)pow(2.0, 1 - t);
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
       if (QP >= 12)
-        mat_z[i][j] = (mat_x[i][j] * mat_V[QP % 6][k]) << (t - 2);
+        mat_z[i][j] = (mat_x[i][j] * mat_V[QP % 6][0]) << (t - 2);
       else
-        mat_z[i][j] = (mat_x[i][j] * mat_V[QP % 6][k] + f) >> (2 - t);
+        mat_z[i][j] = (mat_x[i][j] * mat_V[QP % 6][0] + f) >> (2 - t);
     }
   }
 }
@@ -167,17 +178,9 @@ void inverse_DC_quantize4x4(const int mat_x[][4], int mat_z[][4], const int QP) 
 void forward_quantize2x2(const int mat_x[][2], int mat_z[][2], const int QP) {
   int qbits = 15 + floor(QP / 6);
   int f = (int)(pow(2.0, qbits) / 3.0);
-  int k;
   for (int i = 0; i < 2; i++) {
     for (int j = 0; j < 2; j++) {
-      if (i == 0 && j == 0)
-        k = 0;
-      else if (i == 1 && j == 1)
-        k = 1;
-      else
-        k = 2;
-
-      mat_z[i][j] = (abs(mat_x[i][j]) * mat_MF[QP % 6][k] + f) >> qbits;
+      mat_z[i][j] = (abs(mat_x[i][j]) * mat_MF[QP % 6][0] + 2 * f) >> (qbits + 1);
       if (mat_x[i][j] < 0)
         mat_z[i][j] = -mat_z[i][j];
     }
@@ -186,13 +189,12 @@ void forward_quantize2x2(const int mat_x[][2], int mat_z[][2], const int QP) {
 
 void inverse_quantize2x2(const int mat_x[][2], int mat_z[][2], const int QP) {
   int t = floor(QP / 6);
-  int k = 0;
   for (int i = 0; i < 2; i++) {
     for (int j = 0; j < 2; j++) {
       if (QP >= 6)
-        mat_z[i][j] = (mat_x[i][j] * mat_V[QP % 6][k]) << (t - 1);
+        mat_z[i][j] = (mat_x[i][j] * mat_V[QP % 6][0]) << (t - 1);
       else
-        mat_z[i][j] = (mat_x[i][j] * mat_V[QP % 6][k]) >> 1;
+        mat_z[i][j] = (mat_x[i][j] * mat_V[QP % 6][0]) >> 1;
     }
   }
 }
@@ -349,7 +351,7 @@ inline void forward_qdct(T& block, const int BLOCK_SIZE, const int QP) {
       }
     }
     forward_hadamard4x4(mat16, mat_x);
-    forward_quantize4x4(mat_x, mat16, QP);
+    forward_DC_quantize4x4(mat_x, mat16, QP);
   }
   else { // BLOCK_SIZE = 8
     int mat_p[2][2];
