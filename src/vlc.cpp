@@ -257,6 +257,8 @@ std::pair<Bitstream, int> cavlc_block4x4(Block4x4 block, const int nC, const int
       total_coeff++;
   }
   total_zeros = highest_idx - total_coeff + 1;
+  if (maxNumCoeff == 15)
+    total_zeros--;
 
   // Count trailing ones
   std::string ones_str;
