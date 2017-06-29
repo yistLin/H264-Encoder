@@ -346,7 +346,11 @@ inline void forward_qdct(T& block, const int BLOCK_SIZE, const int QP) {
       }
     }
     forward_hadamard4x4(mat16, mat_z);
-    forward_quantize4x4(mat_z, mat16, QP);
+    forward_quantize4x4(mat_z, mat_x, QP);
+
+    // Zig-zag scan
+    for (int i = 0; i < 16; i++)
+      mat16[mat_zz[i]/4][mat_zz[i]%4] = mat_x[i/4][i%4];
   }
   else { // BLOCK_SIZE = 8
     int mat_p[2][2];
@@ -466,8 +470,13 @@ inline void inverse_qdct(T& block, const int BLOCK_SIZE, const int QP) {
         mat16[i][j] = block[i*4*BLOCK_SIZE + j*4];
       }
     }
-    inverse_hadamard4x4(mat16, mat_x);
-    inverse_quantize4x4(mat_x, mat16, QP);
+
+    // Inverse zig-zag scan
+    for (int i = 0; i < 16; i++)
+      mat_x[i/4][i%4] = mat16[mat_zz[i]/4][mat_zz[i]%4];
+
+    inverse_hadamard4x4(mat_x, mat_z);
+    inverse_quantize4x4(mat_z, mat16, QP);
   }
   else { // BLOCK_SIZE = 8
     int mat_p[2][2];
