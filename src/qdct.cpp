@@ -12,12 +12,9 @@ const int mat_zz[] = {
  * given the residual matrix: R, the core matrix: W, is
  *   W = Cf x R x Cf^T
  */
-void forward_dct4x4(const int mat_y[][4], int mat_z[][4]) {
-  int mat_x[4][4], mat_temp[4][4];
+void forward_dct4x4(const int mat_x[][4], int mat_z[][4]) {
+  int mat_temp[4][4];
   int p0, p1, p2, p3, t0, t1, t2, t3;
-
-  for (int i = 0; i < 16; i++)
-    mat_x[mat_zz[i]/4][mat_zz[i]%4] = mat_y[i/4][i%4];
 
 	// Horizontal
   for (int i = 0; i < 4; i++) {
@@ -61,8 +58,8 @@ void forward_dct4x4(const int mat_y[][4], int mat_z[][4]) {
  * given the core matrix: W, the residual matrix: R is
  *   R = Ci x W x Ci^T
  */
-void inverse_dct4x4(const int mat_x[][4], int mat_y[][4]) {
-  int mat_temp[4][4], mat_z[4][4];
+void inverse_dct4x4(const int mat_x[][4], int mat_z[][4]) {
+  int mat_temp[4][4];
   int p0, p1, p2, p3, t0, t1, t2, t3;
 
 	// Horizontal
@@ -105,9 +102,6 @@ void inverse_dct4x4(const int mat_x[][4], int mat_y[][4]) {
     for (int j = 0; j < 4; j++)
       mat_z[i][j] = int(mat_z[i][j] / 64.0 + 0.5);
   }
-
-  for (int i = 0; i < 16; i++)
-    mat_y[i/4][i%4] = mat_z[mat_zz[i]/4][mat_zz[i]%4];
 }
 
 /* Quantization
@@ -377,10 +371,14 @@ inline void forward_qdct(T& block, const int BLOCK_SIZE, const int QP) {
       // Apply 4x4 core transform
       forward_quantize4x4(mat_x, mat_z, QP);
 
+      // Zig-zag scan
+      for (int i = 0; i < 16; i++)
+        mat_x[mat_zz[i]/4][mat_zz[i]%4] = mat_z[i/4][i%4];
+
       // Write back from 4x4 matrix
       for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++)
-          block[i+j+y*BLOCK_SIZE+x] = mat_z[y][x];
+          block[i+j+y*BLOCK_SIZE+x] = mat_x[y][x];
       }
     }
   }
@@ -414,10 +412,14 @@ inline void forward_qdct4x4(Block4x4 block, const int QP) {
   forward_dct4x4(mat_x, mat_z);
   forward_quantize4x4(mat_z, mat_x, QP);
 
+  // Zig-zag scan
+  for (int i = 0; i < 16; i++)
+    mat_z[mat_zz[i]/4][mat_zz[i]%4] = mat_x[i/4][i%4];
+
   // Write back from 4x4 matrix
   for (int y = 0; y < 4; y++) {
     for (int x = 0; x < 4; x++)
-      block[y*4+x] = mat_x[y][x];
+      block[y*4+x] = mat_z[y][x];
   }
 }
 
@@ -429,8 +431,12 @@ inline void inverse_qdct4x4(Block4x4 block, const int QP) {
   // Copy into 4x4 matrix
   for (int y = 0; y < 4; y++) {
     for (int x = 0; x < 4; x++)
-      mat_x[y][x] = block[y*4+x];
+      mat_z[y][x] = block[y*4+x];
   }
+
+  // Inverse zig-zag scan
+  for (int i = 0; i < 16; i++)
+    mat_x[i/4][i%4] = mat_z[mat_zz[i]/4][mat_zz[i]%4];
 
   // Apply 4x4 core transform
   inverse_quantize4x4(mat_x, mat_z, QP);
@@ -480,8 +486,12 @@ inline void inverse_qdct(T& block, const int BLOCK_SIZE, const int QP) {
       // Copy into 4x4 matrix
       for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++)
-          mat_x[y][x] = block[i+j+y*BLOCK_SIZE+x];
+          mat_z[y][x] = block[i+j+y*BLOCK_SIZE+x];
       }
+
+      // Inverse zig-zag scan
+      for (int i = 0; i < 16; i++)
+        mat_x[i/4][i%4] = mat_z[mat_zz[i]/4][mat_zz[i]%4];
 
       // Apply 4x4 core transform
       inverse_quantize4x4(mat_x, mat_z, QP);
