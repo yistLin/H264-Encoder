@@ -6,7 +6,7 @@
 
 // MAX QP for luma is 51, MAX QP for chroma is 39
 const int LUMA_QP = 28;
-const int CHROMA_QP = 8;
+const int CHROMA_QP = 28;
 const int mat_MF[6][3] = {
   {13107, 5243, 8066},
   {11916, 4660, 7490},

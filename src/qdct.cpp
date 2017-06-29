@@ -495,13 +495,13 @@ inline void inverse_qdct(T& block, const int BLOCK_SIZE, const int QP) {
   if (BLOCK_SIZE == 16) {
     for (int i = 0; i < 4; i++) {
       for (int j = 0; j < 4; j++)
-        block[i*4*BLOCK_SIZE + j*4] = int(mat16[i][j] / 8.0 + 0.5);
+        block[i*4*BLOCK_SIZE + j*4] = mat16[i][j];
     }
   }
   else { // BLOCK_SIZE = 8
     for (int i = 0; i < 2; i++) {
       for (int j = 0; j < 2; j++)
-        block[i*4*BLOCK_SIZE + j*4] = int(mat8[i][j] / 8.0 + 0.5);
+        block[i*4*BLOCK_SIZE + j*4] = mat8[i][j];
     }
   }
 
