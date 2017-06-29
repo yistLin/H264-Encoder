@@ -1,12 +1,5 @@
 #include "qdct.h"
 
-const int mat_zz[] = {
-  0,  1,  5,  6,
-  2,  4,  7, 12,
-  3,  8, 11, 13, 
-  9, 10, 14, 15
-};
-
 /* Core transformation
  *
  * given the residual matrix: R, the core matrix: W, is
@@ -345,12 +338,8 @@ inline void forward_qdct(T& block, const int BLOCK_SIZE, const int QP) {
         mat16[i][j] = block[i*4*BLOCK_SIZE + j*4];
       }
     }
-    forward_hadamard4x4(mat16, mat_z);
-    forward_quantize4x4(mat_z, mat_x, QP);
-
-    // Zig-zag scan
-    for (int i = 0; i < 16; i++)
-      mat16[mat_zz[i]/4][mat_zz[i]%4] = mat_x[i/4][i%4];
+    forward_hadamard4x4(mat16, mat_x);
+    forward_quantize4x4(mat_x, mat16, QP);
   }
   else { // BLOCK_SIZE = 8
     int mat_p[2][2];
@@ -375,14 +364,10 @@ inline void forward_qdct(T& block, const int BLOCK_SIZE, const int QP) {
       // Apply 4x4 core transform
       forward_quantize4x4(mat_x, mat_z, QP);
 
-      // Zig-zag scan
-      for (int i = 0; i < 16; i++)
-        mat_x[mat_zz[i]/4][mat_zz[i]%4] = mat_z[i/4][i%4];
-
       // Write back from 4x4 matrix
       for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++)
-          block[i+j+y*BLOCK_SIZE+x] = mat_x[y][x];
+          block[i+j+y*BLOCK_SIZE+x] = mat_z[y][x];
       }
     }
   }
@@ -416,14 +401,10 @@ inline void forward_qdct4x4(Block4x4 block, const int QP) {
   forward_dct4x4(mat_x, mat_z);
   forward_quantize4x4(mat_z, mat_x, QP);
 
-  // Zig-zag scan
-  for (int i = 0; i < 16; i++)
-    mat_z[mat_zz[i]/4][mat_zz[i]%4] = mat_x[i/4][i%4];
-
   // Write back from 4x4 matrix
   for (int y = 0; y < 4; y++) {
     for (int x = 0; x < 4; x++)
-      block[y*4+x] = mat_z[y][x];
+      block[y*4+x] = mat_x[y][x];
   }
 }
 
@@ -435,12 +416,8 @@ inline void inverse_qdct4x4(Block4x4 block, const int QP) {
   // Copy into 4x4 matrix
   for (int y = 0; y < 4; y++) {
     for (int x = 0; x < 4; x++)
-      mat_z[y][x] = block[y*4+x];
+      mat_x[y][x] = block[y*4+x];
   }
-
-  // Inverse zig-zag scan
-  for (int i = 0; i < 16; i++)
-    mat_x[i/4][i%4] = mat_z[mat_zz[i]/4][mat_zz[i]%4];
 
   // Apply 4x4 core transform
   inverse_quantize4x4(mat_x, mat_z, QP);
@@ -471,11 +448,7 @@ inline void inverse_qdct(T& block, const int BLOCK_SIZE, const int QP) {
       }
     }
 
-    // Inverse zig-zag scan
-    for (int i = 0; i < 16; i++)
-      mat_x[i/4][i%4] = mat16[mat_zz[i]/4][mat_zz[i]%4];
-
-    inverse_hadamard4x4(mat_x, mat_z);
+    inverse_hadamard4x4(mat16, mat_z);
     inverse_quantize4x4(mat_z, mat16, QP);
   }
   else { // BLOCK_SIZE = 8
@@ -495,12 +468,8 @@ inline void inverse_qdct(T& block, const int BLOCK_SIZE, const int QP) {
       // Copy into 4x4 matrix
       for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++)
-          mat_z[y][x] = block[i+j+y*BLOCK_SIZE+x];
+          mat_x[y][x] = block[i+j+y*BLOCK_SIZE+x];
       }
-
-      // Inverse zig-zag scan
-      for (int i = 0; i < 16; i++)
-        mat_x[i/4][i%4] = mat_z[mat_zz[i]/4][mat_zz[i]%4];
 
       // Apply 4x4 core transform
       inverse_quantize4x4(mat_x, mat_z, QP);
