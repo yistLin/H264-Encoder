@@ -93,7 +93,8 @@ void inverse_dct4x4(const int mat_x[][4], int mat_z[][4]) {
 
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++)
-      mat_z[i][j] = int(mat_z[i][j] / 64.0 + 0.5);
+      // mat_z[i][j] = int(mat_z[i][j] / 64.0 + 0.5);
+      mat_z[i][j] = (mat_z[i][j] + 32) >> 6;
   }
 }
 
