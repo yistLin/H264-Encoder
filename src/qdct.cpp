@@ -133,7 +133,6 @@ void forward_quantize4x4(const int mat_x[][4], int mat_z[][4], const int QP) {
  */
 void inverse_quantize4x4(const int mat_x[][4], int mat_z[][4], const int QP) {
   int t = floor(QP / 6);
-  int f = (int)pow(2.0, t);
   int k;
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
@@ -144,7 +143,23 @@ void inverse_quantize4x4(const int mat_x[][4], int mat_z[][4], const int QP) {
       else
         k = 2;
 
-      mat_z[i][j] = mat_x[i][j] * mat_V[QP % 6][k] * f;
+      mat_z[i][j] = (mat_x[i][j] * mat_V[QP % 6][k]) << t;
+    }
+  }
+}
+
+/* Inverse Quantization for Luma DC
+ */
+void inverse_DC_quantize4x4(const int mat_x[][4], int mat_z[][4], const int QP) {
+  int t = floor(QP / 6);
+  int f = (int)pow(2.0, 1-t);
+  int k = 0;
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      if (QP >= 12)
+        mat_z[i][j] = (mat_x[i][j] * mat_V[QP % 6][k]) << (t - 2);
+      else
+        mat_z[i][j] = (mat_x[i][j] * mat_V[QP % 6][k] + f) >> (2 - t);
     }
   }
 }
@@ -171,18 +186,13 @@ void forward_quantize2x2(const int mat_x[][2], int mat_z[][2], const int QP) {
 
 void inverse_quantize2x2(const int mat_x[][2], int mat_z[][2], const int QP) {
   int t = floor(QP / 6);
-  int f = (int)pow(2.0, t);
-  int k;
+  int k = 0;
   for (int i = 0; i < 2; i++) {
     for (int j = 0; j < 2; j++) {
-      if (i == 0 && j == 0)
-        k = 0;
-      else if (i == 1 && j == 1)
-        k = 1;
+      if (QP >= 6)
+        mat_z[i][j] = (mat_x[i][j] * mat_V[QP % 6][k]) << (t - 1);
       else
-        k = 2;
-
-      mat_z[i][j] = mat_x[i][j] * mat_V[QP % 6][k] * f;
+        mat_z[i][j] = (mat_x[i][j] * mat_V[QP % 6][k]) >> 1;
     }
   }
 }
@@ -449,7 +459,7 @@ inline void inverse_qdct(T& block, const int BLOCK_SIZE, const int QP) {
     }
 
     inverse_hadamard4x4(mat16, mat_z);
-    inverse_quantize4x4(mat_z, mat16, QP);
+    inverse_DC_quantize4x4(mat_z, mat16, QP);
   }
   else { // BLOCK_SIZE = 8
     int mat_p[2][2];
