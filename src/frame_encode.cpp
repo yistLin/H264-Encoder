@@ -42,7 +42,8 @@ int encode_Y_block(MacroBlock& mb, std::vector<MacroBlock>& decoded_blocks, Fram
     error_intra4x4 += encode_Y_intra4x4_block(i, temp_block, temp_decoded_block, decoded_blocks, frame);
 
   // compare the error of two predictions
-  if (error_intra4x4 < error_intra16x16) {
+  // if (error_intra4x4 < error_intra16x16) {
+  if (false && error_intra4x4 < error_intra16x16) {
     mb = temp_block;
     decoded_blocks.at(mb.mb_index) = temp_decoded_block;
     std::string mode = "\tmode:";
@@ -79,7 +80,7 @@ int encode_Y_intra16x16_block(MacroBlock& mb, std::vector<MacroBlock>& decoded_b
 
   // QDCT
   qdct_luma16x16_intra(mb.Y);
-
+  
   // reconstruct for later prediction
   decoded_blocks.at(mb.mb_index).Y = mb.Y;
   inv_qdct_luma16x16_intra(decoded_blocks.at(mb.mb_index).Y);
@@ -88,6 +89,10 @@ int encode_Y_intra16x16_block(MacroBlock& mb, std::vector<MacroBlock>& decoded_b
                          get_decoded_Y_block(MB_NEIGHBOR_U),
                          get_decoded_Y_block(MB_NEIGHBOR_L),
                          mode);
+
+  for (int i = 0; i < 16; i++)
+    for (int j = 0; j < 16; j++)
+      decoded_blocks.at(mb.mb_index).Y[i*16+j] = std::max(16, std::min(235, decoded_blocks.at(mb.mb_index).Y[i*16+j]));
 
   return error;
 }
@@ -198,6 +203,10 @@ int encode_Y_intra4x4_block(int cur_pos, MacroBlock& mb, MacroBlock& decoded_blo
                        get_L_4x4_block(),
                        mode);
 
+  for (int i = 0; i < 4; i++)
+    for (int j = 0; j < 4; j++)
+      decoded_block.get_Y_4x4_block(cur_pos)[i*4+j] = std::max(16, std::min(235, decoded_block.get_Y_4x4_block(cur_pos)[i*4+j]));
+
   return error;
 }
 
@@ -248,6 +257,11 @@ int encode_Cr_Cb_intra8x8_block(MacroBlock& mb, std::vector<MacroBlock>& decoded
                               get_decoded_Cr_block(MB_NEIGHBOR_U),
                               get_decoded_Cr_block(MB_NEIGHBOR_L),
                               mode);
+
+  for (int i = 0; i < 8; i++)
+    for (int j = 0; j < 8; j++)
+      decoded_blocks.at(mb.mb_index).Cr[i*8+j] = std::max(16, std::min(240, decoded_blocks.at(mb.mb_index).Cr[i*8+j]));
+
   decoded_blocks.at(mb.mb_index).Cb = mb.Cb;
   inv_qdct_chroma8x8_intra(decoded_blocks.at(mb.mb_index).Cb);
   intra8x8_chroma_reconstruct(decoded_blocks.at(mb.mb_index).Cb,
@@ -255,6 +269,10 @@ int encode_Cr_Cb_intra8x8_block(MacroBlock& mb, std::vector<MacroBlock>& decoded
                               get_decoded_Cb_block(MB_NEIGHBOR_U),
                               get_decoded_Cb_block(MB_NEIGHBOR_L),
                               mode);
+
+  for (int i = 0; i < 8; i++)
+    for (int j = 0; j < 8; j++)
+      decoded_blocks.at(mb.mb_index).Cb[i*8+j] = std::max(16, std::min(240, decoded_blocks.at(mb.mb_index).Cb[i*8+j]));
 
   return error;
 }
