@@ -37,10 +37,10 @@ Block4x4 MacroBlock::get_Cb_4x4_block(int pos) {
 }
 
 Block4x4 MacroBlock::get_Y_DC_block() {
-  Block4x4 block(Y[0], Y[4], Y[64], Y[68],
-                 Y[8], Y[12], Y[72], Y[76],
-                 Y[128], Y[132], Y[192], Y[196],
-                 Y[136], Y[140], Y[200], Y[204]);
+  Block4x4 block(Y[0], Y[4], Y[8], Y[12],
+                 Y[64], Y[68], Y[72], Y[76],
+                 Y[128], Y[132], Y[136], Y[140],
+                 Y[192], Y[196], Y[200], Y[204]);
   return block;
 }
 
