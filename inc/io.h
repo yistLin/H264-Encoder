@@ -50,8 +50,8 @@ private:
 
   Bitstream seq_parameter_set_rbsp(const int, const int, const int);
   Bitstream pic_parameter_set_rbsp();
-  Bitstream write_slice_data(Frame& frame, Bitstream&);
-  Bitstream mb_pred(MacroBlock& mb);
+  Bitstream write_slice_data(Frame&, Bitstream&);
+  Bitstream mb_pred(MacroBlock&, Frame&);
   Bitstream slice_layer_without_partitioning_rbsp(const int, Frame&);
   Bitstream slice_header(const int);
 };

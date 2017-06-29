@@ -304,7 +304,7 @@ Bitstream Writer::write_slice_data(Frame& frame, Bitstream& sodb) {
       sodb += ue(0);
     }
 
-    sodb += mb_pred(mb);
+    sodb += mb_pred(mb, frame);
 
     if (!mb.is_intra16x16) {
       unsigned int cbp = 0;
@@ -331,22 +331,50 @@ Bitstream Writer::write_slice_data(Frame& frame, Bitstream& sodb) {
   return sodb;
 }
 
-Bitstream Writer::mb_pred(MacroBlock& mb) {
+Bitstream Writer::mb_pred(MacroBlock& mb, Frame& frame) {
   Bitstream sodb;
 
   if (!mb.is_intra16x16) {
-    unsigned int last = 0;
-    for (auto& p_mode : mb.intra4x4_Y_mode) {
-      unsigned int mode = static_cast<unsigned int>(p_mode);
-      if (mode == last) {
+    for (int cur_pos = 0; cur_pos != 16; cur_pos++) {
+      int real_pos = MacroBlock::convert_table[cur_pos];
+
+      int pmA_index, pmA_pos;
+      if (real_pos % 4 == 0) {
+        pmA_index = frame.get_neighbor_index(mb.mb_index, MB_NEIGHBOR_L);
+        pmA_pos = real_pos + 3;
+      } else {
+        pmA_index = mb.mb_index;
+        pmA_pos = real_pos - 1;
+      }
+      pmA_pos = MacroBlock::convert_table[pmA_pos];
+
+      int pmB_index, pmB_pos;
+      if (0 <= real_pos && real_pos <= 3) {
+        pmB_index = frame.get_neighbor_index(mb.mb_index, MB_NEIGHBOR_U);
+        pmB_pos = 12 + real_pos;
+      } else {
+        pmB_index = mb.mb_index;
+        pmB_pos = real_pos - 4;
+      }
+      pmB_pos = MacroBlock::convert_table[pmB_pos];
+
+      int pred_modeA = 2, pred_modeB = 2;
+      if (pmA_index != -1 && (!frame.mbs.at(pmA_index).is_intra16x16) && (!frame.mbs.at(pmA_index).is_I_PCM)
+          && pmB_index != -1 && (!frame.mbs.at(pmB_index).is_intra16x16) && (!frame.mbs.at(pmB_index).is_I_PCM)) {
+        pred_modeA = static_cast<int>(frame.mbs.at(pmA_index).intra4x4_Y_mode.at(pmA_pos));
+        pred_modeB = static_cast<int>(frame.mbs.at(pmB_index).intra4x4_Y_mode.at(pmB_pos));
+      }
+
+      int pred_mode = std::min(pred_modeA, pred_modeB);
+      int cur_mode = static_cast<int>(mb.intra4x4_Y_mode.at(cur_pos));
+      if (pred_mode == cur_mode) {
         sodb += Bitstream(true);
       } else {
         sodb += Bitstream(false);
-        if (mode < last)
-          sodb += Bitstream(static_cast<std::uint8_t>(mode), 3);
+        if (cur_mode < pred_mode)
+          sodb += Bitstream(static_cast<std::uint8_t>(cur_mode), 3);
         else
-          sodb += Bitstream(static_cast<std::uint8_t>(mode - 1), 3);
-        last = mode;
+          sodb += Bitstream(static_cast<std::uint8_t>(cur_mode - 1), 3);
       }
     }
   }
