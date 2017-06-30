@@ -169,7 +169,7 @@ void inverse_DC_quantize4x4(const int mat_x[][4], int mat_z[][4], const int QP) 
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
       if (QP >= 12)
-        mat_z[i][j] = (mat_x[i][j] * mat_V[QP % 6][0]) << (t - 2);
+        mat_z[i][j] = (int)((mat_x[i][j] * mat_V[QP % 6][0]) * pow(2.0, t - 2));
       else
         mat_z[i][j] = (mat_x[i][j] * mat_V[QP % 6][0] + f) >> (2 - t);
     }
@@ -193,7 +193,7 @@ void inverse_quantize2x2(const int mat_x[][2], int mat_z[][2], const int QP) {
   for (int i = 0; i < 2; i++) {
     for (int j = 0; j < 2; j++) {
       if (QP >= 6)
-        mat_z[i][j] = (mat_x[i][j] * mat_V[QP % 6][0]) << (t - 1);
+        mat_z[i][j] = (int)((mat_x[i][j] * mat_V[QP % 6][0]) * pow(2.0, t - 1));
       else
         mat_z[i][j] = (mat_x[i][j] * mat_V[QP % 6][0]) >> 1;
     }
@@ -236,10 +236,10 @@ void forward_hadamard4x4(const int mat_x[][4], int mat_z[][4]) {
     t2 = p1 - p2;
     t3 = p0 - p3;
 
-    mat_z[0][i] = (t0 + t1) >> 1;
-    mat_z[1][i] = (t2 + t3) >> 1;
-    mat_z[2][i] = (t0 - t1) >> 1;
-    mat_z[3][i] = (t3 - t2) >> 1;
+    mat_z[0][i] = (t0 + t1 + 1) >> 1;
+    mat_z[1][i] = (t2 + t3 + 1) >> 1;
+    mat_z[2][i] = (t0 - t1 + 1) >> 1;
+    mat_z[3][i] = (t3 - t2 + 1) >> 1;
   }
 }
 
@@ -304,9 +304,9 @@ void inverse_hadamard2x2(const int mat_x[][2], int mat_z[][2]) {
   int t0, t1, t2, t3;
 
   t0 = mat_x[0][0] + mat_x[0][1];
-  t1 = mat_x[0][0] + mat_x[0][1];
+  t1 = mat_x[0][0] - mat_x[0][1];
   t2 = mat_x[1][0] + mat_x[1][1];
-  t3 = mat_x[1][0] + mat_x[1][1];
+  t3 = mat_x[1][0] - mat_x[1][1];
 
   mat_z[0][0] = t0 + t2;
   mat_z[0][1] = t1 + t3;
